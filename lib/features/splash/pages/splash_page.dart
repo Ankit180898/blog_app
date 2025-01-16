@@ -1,9 +1,6 @@
 import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/features/auth/presentation/pages/login_page.dart';
-import 'package:blog_app/features/auth/presentation/pages/signup_page.dart';
-import 'package:blog_app/features/auth/presentation/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -34,7 +31,7 @@ class SplashPage extends StatelessWidget {
             const SizedBox(
               height: 14,
             ),
-            Center(child: Image.asset("assets/images/background_img.png")),
+            Center(child: Image.asset("assets/images/background_gif.png")),
             const SizedBox(
               height: 14,
             ),

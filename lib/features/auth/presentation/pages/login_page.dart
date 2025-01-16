@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Align(
               alignment: Alignment.topCenter,
               child: Image.asset(
-                "assets/images/background_img.png",
+                "assets/images/background_gif.png",
               ),
             ),
           ),
@@ -64,8 +64,9 @@ class _LoginPageState extends State<LoginPage> {
                     controller: passwordController,
                     isObscureText: true,
                   ),
-                  const AuthButton(
+                  AuthButton(
                     btnText: 'Sign In',
+                    onPressed: () {},
                   ),
                   GestureDetector(
                     onTap: () {

@@ -1,10 +1,12 @@
 import 'dart:ui';
 
 import 'package:blog_app/core/theme/app_palette.dart';
+import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/features/auth/presentation/pages/login_page.dart';
 import 'package:blog_app/features/auth/presentation/widgets/auth_button.dart';
 import 'package:blog_app/features/auth/presentation/widgets/auth_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SignUpPage extends StatefulWidget {
   static route() => MaterialPageRoute(builder: (context) {
@@ -46,7 +48,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   enabled: true,
                   imageFilter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                   child: Image.asset(
-                    "assets/images/background_img.png",
+                    "assets/images/background_gif.png",
                   ),
                 )),
           ),
@@ -63,7 +65,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(
-                    height: 24,
+                    height: 84,
                   ),
                   AuthField(
                     hintText: "Name",
@@ -78,8 +80,18 @@ class _SignUpPageState extends State<SignUpPage> {
                     controller: passwordController,
                     isObscureText: true,
                   ),
-                  const AuthButton(
+                  AuthButton(
                     btnText: 'Sign Up',
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        context.read<AuthBloc>().add(
+                              AuthSignUp(
+                                  email: emailController.text,
+                                  name: nameController.text,
+                                  password: passwordController.text),
+                            );
+                      }
+                    },
                   ),
                   GestureDetector(
                     onTap: () {
