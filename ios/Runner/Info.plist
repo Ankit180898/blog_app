@@ -45,5 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photos from gallery required so that I upload it in blog</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Photos from camera required</string>
+	
 </dict>
 </plist>
