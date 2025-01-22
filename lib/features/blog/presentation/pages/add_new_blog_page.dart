@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:blog_app/core/theme/app_palette.dart';
+import 'package:blog_app/core/utils/pick_image.dart';
 import 'package:blog_app/features/blog/presentation/widgets/blog_field.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -15,6 +18,16 @@ class _AddNewBlogPageState extends State<AddNewBlogPage> {
   final titleController = TextEditingController();
   final contentController = TextEditingController();
   List<String> selectedTopics = [];
+  File? image;
+
+  void selectImage() async {
+    final pickedImage = await pickImage();
+    if (pickedImage != null) {
+      setState(() {
+        image = pickedImage;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -38,34 +51,52 @@ class _AddNewBlogPageState extends State<AddNewBlogPage> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          DottedBorder(
-              borderType: BorderType.RRect,
-              color: AppPalette.textGrey,
-              radius: Radius.circular(12),
-              padding: EdgeInsets.all(8),
-              dashPattern: [10, 3],
-              strokeCap: StrokeCap.round,
-              strokeWidth: 2,
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.20,
-                child: Center(
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 12,
-                    children: [
-                      Icon(
-                        Icons.folder_open_rounded,
-                        color: AppPalette.focusedColor,
-                        size: 48,
+          GestureDetector(
+            onTap: () {
+              selectImage();
+            },
+            child: image != null
+                ? GestureDetector(
+                    onTap: () => selectImage(),
+                    child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.30,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            image!,
+                            fit: BoxFit.cover,
+                          ),
+                        )),
+                  )
+                : DottedBorder(
+                    borderType: BorderType.RRect,
+                    color: AppPalette.textGrey,
+                    radius: Radius.circular(12),
+                    padding: EdgeInsets.all(8),
+                    dashPattern: [10, 3],
+                    strokeCap: StrokeCap.round,
+                    strokeWidth: 2,
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.20,
+                      child: Center(
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: 12,
+                          children: [
+                            Icon(
+                              Icons.folder_open_rounded,
+                              color: AppPalette.focusedColor,
+                              size: 48,
+                            ),
+                            Text(
+                              "Select your image",
+                              style: TextStyle(fontSize: 16),
+                            )
+                          ],
+                        ),
                       ),
-                      Text(
-                        "Select your image",
-                        style: TextStyle(fontSize: 16),
-                      )
-                    ],
-                  ),
-                ),
-              )),
+                    )),
+          ),
           const SizedBox(height: 16),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
