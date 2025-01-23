@@ -10,8 +10,4 @@ class AppPalette {
   static const Color error = Colors.redAccent;
   static const Color secondaryColor = Colors.deepOrangeAccent;
   static const Color successColor = Colors.lightGreen;
-
-  // static const Color backgroundColor = Color(0xFFEFEFEF);
-  // static const Color backgroundColor = Color(0xFFEFEFEF);
-  // static const Color backgroundColor = Color(0xFFEFEFEF);
 }

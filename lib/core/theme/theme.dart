@@ -9,16 +9,24 @@ class AppTheme {
       ),
       borderRadius: BorderRadius.circular(10));
   static final lightThemeMode = ThemeData.light().copyWith(
-      appBarTheme: AppBarTheme(backgroundColor: AppPalette.transparent),
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppPalette.transparent,
+        surfaceTintColor: AppPalette.transparent,
+      ),
       scaffoldBackgroundColor: AppPalette.backgroundColor,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        elevation: 1,
+        backgroundColor: AppPalette.secondaryColor.withAlpha(150),
+      ),
       chipTheme: ChipThemeData(
           color: WidgetStateProperty.all(
             AppPalette.backgroundColor,
           ),
           side: BorderSide.none),
       inputDecorationTheme: InputDecorationTheme(
-        contentPadding: const EdgeInsets.all(24),
-        enabledBorder: _border(),
-        focusedBorder: _border(AppPalette.focusedColor),
-      ));
+          contentPadding: const EdgeInsets.all(24),
+          border: _border(),
+          enabledBorder: _border(),
+          focusedBorder: _border(AppPalette.focusedColor),
+          errorBorder: _border(AppPalette.error)));
 }

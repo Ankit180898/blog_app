@@ -1,4 +1,3 @@
-import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:flutter/material.dart';
 
 class AuthField extends StatelessWidget {
@@ -20,15 +19,6 @@ class AuthField extends StatelessWidget {
         hintText: hintText,
         focusedBorder: null,
         alignLabelWithHint: true,
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            8.0,
-          ),
-          borderSide: BorderSide(
-            color: AppPalette.error,
-            width: 2,
-          ),
-        ),
       ),
       validator: (value) {
         if (value!.isEmpty) {
