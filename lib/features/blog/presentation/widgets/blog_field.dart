@@ -18,6 +18,7 @@ class BlogField extends StatelessWidget {
         focusedBorder: null,
         alignLabelWithHint: true,
       ),
+      
       maxLines: null,
       validator: (value) {
         if (value!.isEmpty) {

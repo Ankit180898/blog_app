@@ -33,3 +33,23 @@ This project is a starting point for a Flutter application that allows users to 
     flutter run
     ```
 
+## Screenshots
+
+Here are some screenshots of the app in action:
+
+### Home Screen
+![Home Screen](assets/screenshots/home_screen.png)
+
+### Blog Detail Screen
+![Blog Detail Screen](assets/screenshots/blog_detail_screen.png)
+
+### Add New Blog Screen
+![Add New Blog Screen](assets/screenshots/add_new_blog_screen.png)
+
+### User Authentication
+![User Authentication](assets/screenshots/user_authentication.png)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+

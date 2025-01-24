@@ -1,6 +1,8 @@
+import 'package:blog_app/core/common/widgets/loader.dart';
 import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class BlogDetailPage extends StatelessWidget {
@@ -19,13 +21,23 @@ class BlogDetailPage extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                height: MediaQuery.of(context).size.height * 0.30,
-                blog.imageUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.35,
+              child: Center(
+                child: Hero(
+                  tag:
+                      'blog-image-${blog.id}', // Unique tag for the hero animation
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: blog.imageUrl,
+                      fit: BoxFit.fill,
+                      placeholder: (context, url) =>
+                          Center(child: const Loader()),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -37,28 +49,32 @@ class BlogDetailPage extends StatelessWidget {
                       .map((e) => Padding(
                             padding: const EdgeInsets.only(right: 12.0),
                             child: Chip(
-                                label: Text(e),
+                                label: Text(
+                                  e,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(
+                                        color: AppPalette.focusedColor,
+                                      ),
+                                ),
                                 color: WidgetStatePropertyAll(
                                     AppPalette.secondaryColor.withAlpha(20))),
                           ))
                       .toList(),
                 ),
-                Text(
-                  Constants.formatDate(blog.updatedAt),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                    color: AppPalette.textGrey,
-                  ),
-                ),
+                Text(Constants.formatDate(blog.updatedAt),
+                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: AppPalette.textGrey)),
               ],
             ),
             Text(
               blog.title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context)
+                  .textTheme
+                  .displayMedium!
+                  .copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
 
@@ -67,8 +83,8 @@ class BlogDetailPage extends StatelessWidget {
               children: [
                 RichText(
                   text: TextSpan(
-                    style: TextStyle(
-                        fontSize: 10, color: Colors.black), // Default style
+                    style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                        color: AppPalette.focusedColor), // Default style
                     children: [
                       TextSpan(
                         text: 'By: ',
@@ -97,11 +113,10 @@ class BlogDetailPage extends StatelessWidget {
             const Divider(
               color: AppPalette.textGrey,
             ),
-            const SizedBox(height: 12),
             // Using Text.rich for formatted content
             Text.rich(
               TextSpan(
-                children: _formatBlogContent(blog.content),
+                children: _formatBlogContent(blog.content, context),
               ),
               style: TextStyle(fontSize: 16),
             ),
@@ -109,15 +124,17 @@ class BlogDetailPage extends StatelessWidget {
         ));
   }
 
-  List<TextSpan> _formatBlogContent(String content) {
+  List<TextSpan> _formatBlogContent(String content, BuildContext context) {
     // Split the content into parts based on your formatting rules
     // For example, you can split by new lines or specific markers
     List<TextSpan> spans = [];
-    List<String> lines = content.split('\n'); // Split by new lines
+    List<String> lines = content.split('\n\n'); // Split by new lines
 
     for (String line in lines) {
-      spans.add(
-          TextSpan(text: '${line.trim()}\n')); // Add each line as a TextSpan
+      spans.add(TextSpan(
+        text: '${line.trim()}\n',
+        style: Theme.of(context).textTheme.bodyLarge,
+      )); // Add each line as a TextSpan
     }
 
     return spans;

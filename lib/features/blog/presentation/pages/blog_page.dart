@@ -31,26 +31,76 @@ class _BlogPageState extends State<BlogPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "BlogD",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.displaySmall!.copyWith(
+              color: AppPalette.focusedColor, fontWeight: FontWeight.bold),
         ),
         surfaceTintColor: AppPalette.transparent,
-        centerTitle: false,
+        centerTitle: true,
         actions: [],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, AddNewBlogPage.route());
-        },
-        child: const Icon(
-          CupertinoIcons.add,
-          color: AppPalette.whiteColor,
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: AppPalette.focusedColor, // Set your desired header color
+              ),
+              child: Text(
+                'Blog Menu',
+                style: TextStyle(
+                  color: AppPalette.whiteColor, // Set text color for header
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {
+                // Handle navigation to Home
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.add),
+              title: Text('Add New Blog'),
+              onTap: () {
+                Navigator.push(context, AddNewBlogPage.route());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.drafts),
+              title: Text('Your Blogs'),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+
+                // Navigator.push(context, AddNewBlogPage.route());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () {
+                // Handle logout
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            // Add more ListTiles for additional menu items
+          ],
         ),
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.push(context, AddNewBlogPage.route());
+      //   },
+      //   child: const Icon(
+      //     CupertinoIcons.add,
+      //     color: AppPalette.whiteColor,
+      //   ),
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -87,18 +137,21 @@ class _BlogPageState extends State<BlogPage> {
                         })
                       : Expanded(
                           child: ListView.builder(
-                            padding: EdgeInsets.all(0),
-                            shrinkWrap: true,
-                            itemCount: state.blogs.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final blog = state.blogs[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: BlogCard(blog: blog),
-                              );
-                            },
-                          ),
-                        );
+                          padding: EdgeInsets.all(0),
+                          shrinkWrap: true,
+                          itemCount: state.blogs.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            // Sort the blogs by updatedAt in descending order
+                            final sortedBlogs = state.blogs
+                              ..sort(
+                                  (a, b) => b.updatedAt.compareTo(a.updatedAt));
+                            final blog = sortedBlogs[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12.0),
+                              child: BlogCard(blog: blog),
+                            );
+                          },
+                        ));
                 }
                 return const SizedBox();
               },
