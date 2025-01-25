@@ -1,4 +1,4 @@
-# Blog App
+# BlogD
 
 A new Flutter project for creating and managing a blog application.
 

@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET"/> <!-- Added Internet Permission -->
 
     <application
-        android:label="blog_app"
+        android:label="BlogD"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
