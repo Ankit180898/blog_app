@@ -12,43 +12,83 @@ import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AddNewBlogPage extends StatefulWidget {
-  static route() => MaterialPageRoute(builder: (context) => AddNewBlogPage());
-  const AddNewBlogPage({super.key});
+class EditUserBlogPage extends StatefulWidget {
+  final String blogId;
+  final String initialTitle;
+  final String initialContent;
+  final String? initialImage;
+  final List<String> initialTopics;
+
+  static route({
+    required String blogId,
+    required String initialTitle,
+    required String initialContent,
+    required String? initialImage,
+    required List<String> initialTopics,
+  }) =>
+      MaterialPageRoute(
+        builder: (context) => EditUserBlogPage(
+          blogId: blogId,
+          initialTitle: initialTitle,
+          initialContent: initialContent,
+          initialImage: initialImage,
+          initialTopics: initialTopics,
+        ),
+      );
+
+  const EditUserBlogPage({
+    super.key,
+    required this.blogId,
+    required this.initialTitle,
+    required this.initialContent,
+    required this.initialImage,
+    required this.initialTopics,
+  });
 
   @override
-  State<AddNewBlogPage> createState() => _AddNewBlogPageState();
+  State<EditUserBlogPage> createState() => _EditUserBlogPageState();
 }
 
-class _AddNewBlogPageState extends State<AddNewBlogPage> {
-  final titleController = TextEditingController();
-  final contentController = TextEditingController();
-  List<String> selectedTopics = [];
-  File? image;
+class _EditUserBlogPageState extends State<EditUserBlogPage> {
+  late final TextEditingController titleController;
+  late final TextEditingController contentController;
+  late List<String> selectedTopics;
+  String? imageUrl; // Existing image URL
+  File? newImage; // New image file to upload
   final formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    titleController = TextEditingController(text: widget.initialTitle);
+    contentController = TextEditingController(text: widget.initialContent);
+    selectedTopics = List.from(widget.initialTopics);
+    imageUrl = widget.initialImage; // Initialize with the existing image URL
+  }
 
   void selectImage() async {
     final pickedImage = await pickImage();
     if (pickedImage != null) {
       setState(() {
-        image = pickedImage;
+        newImage = pickedImage; // Store the new image file
+        imageUrl = null; // Clear the existing image URL
       });
     }
   }
 
-  void uploadBlog() {
-    if (formKey.currentState!.validate() &&
-        selectedTopics.isNotEmpty &&
-        image != null) {
+  void updateBlog() {
+    if (formKey.currentState!.validate() && selectedTopics.isNotEmpty) {
       final posterId =
           (context.read<AppUserCubit>().state as AppUserLoggedIn).user.id;
-      context.read<BlogBloc>().add(BlogUpload(
-            posterId: posterId,
-            title: titleController.text.trim(),
-            image: image!,
-            content: contentController.text.trim(),
-            topics: selectedTopics,
-          ));
+      context.read<BlogBloc>().add(
+            EditBlogEvent(
+              id: widget.blogId,
+              title: titleController.text.trim(),// Pass the existing image URL (if no new image)
+              posterId: posterId,
+              content: contentController.text.trim(),
+              topics: selectedTopics, image: null,
+            ),
+          );
     } else {
       showSnackbar(
           context, 'Please fill all fields and select at least one topic.');
@@ -57,16 +97,16 @@ class _AddNewBlogPageState extends State<AddNewBlogPage> {
 
   @override
   void dispose() {
-    super.dispose();
     titleController.dispose();
     contentController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add New Blog"),
+        title: const Text("Edit Blog"),
         centerTitle: true,
         elevation: 0,
         backgroundColor: AppPalette.backgroundColor,
@@ -76,7 +116,7 @@ class _AddNewBlogPageState extends State<AddNewBlogPage> {
         listener: (context, state) {
           if (state is BlogFailure) {
             showSnackbar(context, state.error);
-          } else if (state is BlogUploadSuccess) {
+          } else if (state is BlogEditSuccess) {
             Navigator.pushAndRemoveUntil(
               context,
               BlogPage.route(),
@@ -116,32 +156,41 @@ class _AddNewBlogPageState extends State<AddNewBlogPage> {
                         height: MediaQuery.of(context).size.height * 0.25,
                         width: double.infinity,
                         child: Center(
-                          child: image == null
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.image,
-                                      color: AppPalette.focusedColor,
-                                      size: 48,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      "Upload a cover image",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: AppPalette.textGrey,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : ClipRRect(
+                          child: newImage != null
+                              ? ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
                                   child: Image.file(
-                                    image!,
+                                    newImage!,
                                     fit: BoxFit.cover,
                                   ),
-                                ),
+                                )
+                              : imageUrl != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        imageUrl!,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.image,
+                                          color: AppPalette.focusedColor,
+                                          size: 48,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          "Upload a cover image",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: AppPalette.textGrey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                         ),
                       ),
                     ),
@@ -237,7 +286,7 @@ class _AddNewBlogPageState extends State<AddNewBlogPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: uploadBlog,
+        onPressed: updateBlog,
         backgroundColor: AppPalette.focusedColor,
         child: const Icon(Icons.check, color: AppPalette.whiteColor),
       ),

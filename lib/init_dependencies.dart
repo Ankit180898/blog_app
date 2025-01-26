@@ -10,7 +10,12 @@ import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/features/blog/data/datasources/blog_remote_data_source.dart';
 import 'package:blog_app/features/blog/data/repositories/blog_repository_impl.dart';
 import 'package:blog_app/features/blog/domain/repositories/blog_repository.dart';
+import 'package:blog_app/features/blog/domain/usecases/delete_user_blog.dart';
+import 'package:blog_app/features/blog/domain/usecases/edit_blog.dart';
+import 'package:blog_app/features/blog/domain/usecases/filter_blogs_by_category.dart';
 import 'package:blog_app/features/blog/domain/usecases/get_all_blogs.dart';
+import 'package:blog_app/features/blog/domain/usecases/get_user_blogs.dart';
+import 'package:blog_app/features/blog/domain/usecases/search_blog_post.dart';
 import 'package:blog_app/features/blog/domain/usecases/upload_blog.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -65,7 +70,6 @@ void _initAuth() {
       () => AuthRepositoryImpl(
         serviceLocator(),
         serviceLocator(),
-
       ),
     )
     // UseCases
@@ -119,12 +123,44 @@ void _initBlog() {
         serviceLocator(),
       ),
     )
+    // Search blogs use case
+    ..registerFactory(
+      () => SearchBlogPosts(
+        serviceLocator(),
+      ),
+    )
+    // Filter blogs use case
+    ..registerFactory(
+      () => FilterBlogPostsByCategory(
+        serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => EditBlog(
+        serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => DeleteUserBlog(
+        serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => GetUserBlogs(
+        serviceLocator(),
+      ),
+    )
 
     // Bloc
     ..registerLazySingleton(
       () => BlogBloc(
         uploadBlog: serviceLocator(),
         getAllBlogs: serviceLocator(),
+        searchBlogPosts: serviceLocator(),
+        filterBlogPostsByCategory: serviceLocator(),
+        editBlog: serviceLocator(),
+        deleteBlog: serviceLocator(),
+        getUserBlogs: serviceLocator(),
       ),
     );
 }

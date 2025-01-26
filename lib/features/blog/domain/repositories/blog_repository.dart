@@ -13,4 +13,16 @@ abstract interface class BlogRepository {
     required String posterId,
   });
   Future<Either<Failure, List<Blog>>> getAllBlogs();
+  Future<Either<Failure, List<Blog>>> filterBlogPostsByCategory(
+      String category);
+  Future<Either<Failure, List<Blog>>> searchBlogPosts(String query);
+  Future<Either<Failure, List<Blog>>> getBlogsByUser(String userId);
+  Future<Either<Failure, void>> deleteBlog(String blogId);
+Future<Either<Failure, Blog>> editBlog({
+    required String id,
+    required String title,
+    required File image,
+    required String content,
+    required List<String> topics,
+  });
 }

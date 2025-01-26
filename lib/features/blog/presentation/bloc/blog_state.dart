@@ -19,5 +19,7 @@ final class BlogsDisplaySuccess extends BlogState {
   BlogsDisplaySuccess(this.blogs);
 
 }
+// States
+class BlogDeleteSuccess extends BlogState {}
 
-
+class BlogEditSuccess extends BlogState {}

@@ -92,7 +92,7 @@ class BlogDetailPage extends StatelessWidget {
                             fontWeight: FontWeight.bold), // Bold for "By:"
                       ),
                       TextSpan(
-                        text: blog.posterName!, // Author's name
+                        text: blog.posterName??'Unknown', // Author's name
                         style: TextStyle(
                           decoration: TextDecoration
                               .underline, // Underline the author's name

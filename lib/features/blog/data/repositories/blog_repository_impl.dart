@@ -13,6 +13,7 @@ class BlogRepositoryImpl implements BlogRepository {
   final BlogRemoteDataSource blogRemoteDataSource;
 
   BlogRepositoryImpl(this.blogRemoteDataSource);
+
   @override
   Future<Either<Failure, Blog>> uploadBlog({
     required File image,
@@ -23,13 +24,14 @@ class BlogRepositoryImpl implements BlogRepository {
   }) async {
     try {
       BlogModel blogModel = BlogModel(
-          id: const Uuid().v1(),
-          posterId: posterId,
-          title: title,
-          content: content,
-          imageUrl: 'imageUrl',
-          topics: topics,
-          updatedAt: DateTime.now());
+        id: const Uuid().v1(),
+        posterId: posterId,
+        title: title,
+        content: content,
+        imageUrl: 'imageUrl',
+        topics: topics,
+        updatedAt: DateTime.now(),
+      );
 
       final imageUrl = await blogRemoteDataSource.uploadBlogImage(
         blog: blogModel,
@@ -54,4 +56,100 @@ class BlogRepositoryImpl implements BlogRepository {
       return left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, List<Blog>>> filterBlogPostsByCategory(
+      String category) async {
+    try {
+      // Call the remote data source to filter blogs by category
+      final blogs =
+          await blogRemoteDataSource.filterBlogPostsByCategory(category);
+      return right(blogs);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure('An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Blog>>> searchBlogPosts(String query) async {
+    try {
+      // Call the remote data source to search blogs by query
+      final blogs = await blogRemoteDataSource.searchBlogPosts(query);
+      return right(blogs);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure('An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Blog>>> getBlogsByUser(String userId) async {
+    try {
+      final blogs = await blogRemoteDataSource.getBlogsByUser(userId);
+      return right(blogs);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure('An unexpected error occurred: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteBlog(String blogId) async {
+    try {
+      await blogRemoteDataSource.deleteBlog(blogId);
+      return right(null);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure('An unexpected error occurred: $e'));
+    }
+  }
+  
+@override
+Future<Either<Failure, Blog>> editBlog({
+  required String id,
+  required String title,
+  required File image,
+  required String content,
+  required List<String> topics,
+}) async {
+  try {
+    // Convert the Blog entity to BlogModel
+    final blogModel = BlogModel(
+      id: id,
+      posterId: '', // You can pass the posterId if needed
+      title: title,
+      content: content,
+      imageUrl: '', // This will be updated after uploading the image
+      topics: topics,
+      updatedAt: DateTime.now(),
+    );
+
+    // Upload the new image if provided
+    final imageUrl = await blogRemoteDataSource.uploadBlogImage(
+      blog: blogModel,
+      image: image,
+    );
+
+    // Update the blog with the new image URL
+    final updatedBlogModel = blogModel.copyWith(imageUrl: imageUrl);
+
+    // Update the blog in the database
+    await blogRemoteDataSource.editBlog(
+      blog: updatedBlogModel,
+      image: image,
+    );
+
+    // Return the updated blog
+    return right(updatedBlogModel);
+  } on ServerExceptions catch (e) {
+    return left(Failure(e.message));
+  } catch (e) {
+    return left(Failure('An unexpected error occurred: $e'));
+  }
+}
 }
