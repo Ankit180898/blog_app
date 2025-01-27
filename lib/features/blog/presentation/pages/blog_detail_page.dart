@@ -3,6 +3,7 @@ import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class BlogDetailPage extends StatelessWidget {
@@ -21,6 +22,11 @@ class BlogDetailPage extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Text(
+              blog.title,
+              style: Theme.of(context).textTheme.displayLarge,
+            ),
+            const SizedBox(height: 12),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.35,
               child: Center(
@@ -41,82 +47,87 @@ class BlogDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Wrap(
-                  children: blog.topics
-                      .map((e) => Padding(
-                            padding: const EdgeInsets.only(right: 12.0),
-                            child: Chip(
-                                label: Text(
-                                  e,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall!
-                                      .copyWith(
-                                        color: AppPalette.focusedColor,
-                                      ),
-                                ),
-                                color: WidgetStatePropertyAll(
-                                    AppPalette.secondaryColor.withAlpha(20))),
-                          ))
-                      .toList(),
-                ),
-                Text(Constants.formatDate(blog.updatedAt),
-                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                        fontStyle: FontStyle.italic,
-                        color: AppPalette.textGrey)),
-              ],
+            Wrap(
+              children: blog.topics
+                  .map((e) => Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: Chip(
+                            label: Text(
+                              e,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall!
+                                  .copyWith(
+                                    color: AppPalette.focusedColor,
+                                  ),
+                            ),
+                            color: WidgetStatePropertyAll(
+                                AppPalette.secondaryColor.withAlpha(20))),
+                      ))
+                  .toList(),
             ),
-            Text(
-              blog.title,
-              style: Theme.of(context)
-                  .textTheme
-                  .displayMedium!
-                  .copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                RichText(
-                  text: TextSpan(
-                    style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                        color: AppPalette.focusedColor), // Default style
-                    children: [
-                      TextSpan(
-                        text: 'By: ',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold), // Bold for "By:"
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 8,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                            color: AppPalette.focusedColor), // Default style
+                        children: [
+                          TextSpan(
+                            text: 'By: ',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold), // Bold for "By:"
+                          ),
+                          TextSpan(
+                            text: blog.posterName ?? 'Unknown', // Author's name
+                            style: TextStyle(
+                              decoration: TextDecoration
+                                  .underline, // Underline the author's name
+                            ), // Style for the author's name
+                          ),
+                        ],
                       ),
-                      TextSpan(
-                        text: blog.posterName??'Unknown', // Author's name
-                        style: TextStyle(
-                          decoration: TextDecoration
-                              .underline, // Underline the author's name
-                        ), // Style for the author's name
-                      ),
-                    ],
-                  ),
+                    ),
+                    Text(
+                      Constants.formatDate(blog.updatedAt),
+                      style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: AppPalette.textGrey),
+                    ),
+                  ],
                 ),
-                IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      size: 18,
-                      Icons.share_rounded,
-                      color: AppPalette.textGrey,
-                    ))
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(CupertinoIcons.headphones,
+                          size: 18, color: AppPalette.textGrey),
+                    ),
+                    IconButton(
+                        onPressed: () {},
+                        icon: Icon(
+                          size: 18,
+                          Icons.share_rounded,
+                          color: AppPalette.textGrey,
+                        )),
+                  ],
+                ),
               ],
             ),
+
             const Divider(
               color: AppPalette.textGrey,
             ),
             // Using Text.rich for formatted content
             Text.rich(
               TextSpan(
-                children: _formatBlogContent(blog.content, context),
+                children: Constants.formatBlogContent(blog.content, context),
               ),
               style: TextStyle(fontSize: 16),
             ),
@@ -124,19 +135,5 @@ class BlogDetailPage extends StatelessWidget {
         ));
   }
 
-  List<TextSpan> _formatBlogContent(String content, BuildContext context) {
-    // Split the content into parts based on your formatting rules
-    // For example, you can split by new lines or specific markers
-    List<TextSpan> spans = [];
-    List<String> lines = content.split('\n\n'); // Split by new lines
 
-    for (String line in lines) {
-      spans.add(TextSpan(
-        text: '${line.trim()}\n',
-        style: Theme.of(context).textTheme.bodyLarge,
-      )); // Add each line as a TextSpan
-    }
-
-    return spans;
-  }
 }

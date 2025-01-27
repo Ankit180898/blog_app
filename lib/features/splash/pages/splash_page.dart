@@ -3,6 +3,7 @@ import 'package:blog_app/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatelessWidget {
+  static route() => MaterialPageRoute(builder: (context) => SplashPage());
   const SplashPage({super.key});
 
   @override

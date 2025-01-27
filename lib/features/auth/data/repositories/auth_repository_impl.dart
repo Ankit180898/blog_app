@@ -2,6 +2,7 @@ import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/error/exceptions.dart';
 import 'package:blog_app/core/error/failures.dart';
 import 'package:blog_app/core/network/connection_checker.dart';
+import 'package:blog_app/core/usecase/usecase.dart';
 import 'package:blog_app/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:blog_app/core/common/entities/user.dart';
 import 'package:blog_app/features/auth/data/models/user_model.dart';
@@ -83,6 +84,19 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = await fn();
 
       return right(user);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> logout() async {
+    try {
+      if (!await (connectionChecker.isConnected)) {
+        return left(Failure(Constants.noConnectionErrorMessage));
+      }
+      await remoteDataSource.logout();
+      return right(UserModel(id: '', email: '', name: ''));
     } on ServerExceptions catch (e) {
       return left(Failure(e.message));
     }

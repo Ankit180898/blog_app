@@ -3,10 +3,12 @@ import 'package:blog_app/core/common/widgets/loader.dart';
 import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/core/utils/show_snackbar.dart';
+import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
 import 'package:blog_app/features/blog/presentation/pages/add_new_blog_page.dart';
 import 'package:blog_app/features/blog/presentation/pages/your_blogs_page.dart';
 import 'package:blog_app/features/blog/presentation/widgets/blog_card.dart';
+import 'package:blog_app/features/splash/pages/splash_page.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -47,17 +49,25 @@ class _BlogPageState extends State<BlogPage> {
           title: const Text('Logout'),
           content: const Text('Are you sure you want to logout?'),
           actions: [
+            // Cancel Button
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Close the dialog
               },
               child: const Text('Cancel'),
             ),
+
+            // Logout Button
             TextButton(
               onPressed: () {
-                // Handle logout logic here
+                // Call the logoutUser method
+                context.read<AuthBloc>().add(AuthLogout());
+
+                // Close the dialog
                 Navigator.pop(context);
-                // Navigate to login page or clear user session
+
+                // Navigate to the SplashPage or LoginPage
+                Navigator.of(context).pushReplacement(SplashPage.route());
               },
               child: const Text('Logout'),
             ),
@@ -70,8 +80,7 @@ class _BlogPageState extends State<BlogPage> {
   void _showFilterMenu(BuildContext context) async {
     final selectedValue = await showMenu<String>(
       context: context,
-      position: const RelativeRect.fromLTRB(
-          100, 100, 0, 0), // Adjust position as needed
+      position: const RelativeRect.fromLTRB(100, 100, 0, 0),
       items: Constants.topics.map((String category) {
         return PopupMenuItem<String>(
           value: category,
@@ -139,7 +148,7 @@ class _BlogPageState extends State<BlogPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          state.user.name ?? 'User',
+                          state.user.name,
                           style: TextStyle(
                             color: AppPalette.whiteColor,
                             fontSize: 24,
@@ -147,7 +156,7 @@ class _BlogPageState extends State<BlogPage> {
                           ),
                         ),
                         Text(
-                          state.user.email ?? 'user@example.com',
+                          state.user.email,
                           style: TextStyle(
                             color: AppPalette.whiteColor.withOpacity(0.8),
                             fontSize: 14,
@@ -182,6 +191,8 @@ class _BlogPageState extends State<BlogPage> {
               leading: const Icon(Icons.add),
               title: const Text('Add New Blog'),
               onTap: () {
+                Navigator.pop(context); // Close the drawer
+
                 Navigator.push(context, AddNewBlogPage.route());
               },
             ),
@@ -214,6 +225,7 @@ class _BlogPageState extends State<BlogPage> {
                 Expanded(
                   child: CupertinoSearchTextField(
                     controller: _searchController,
+                    autofocus: false,
                     onChanged: (value) {
                       if (value.isEmpty) {
                         // If the search query is empty, fetch all blogs
@@ -251,9 +263,9 @@ class _BlogPageState extends State<BlogPage> {
                 if (state is BlogsDisplaySuccess) {
                   return state.blogs.isEmpty
                       ? Center(
-                        child: DotLottieLoader.fromAsset(
-                            "assets/images/empty_state.lottie",
-                            frameBuilder: (ctx, dotlottie) {
+                          child: DotLottieLoader.fromAsset(
+                              "assets/images/empty_state.lottie",
+                              frameBuilder: (ctx, dotlottie) {
                             if (dotlottie != null) {
                               return Lottie.memory(
                                   dotlottie.animations.values.single);
@@ -261,7 +273,7 @@ class _BlogPageState extends State<BlogPage> {
                               return Container();
                             }
                           }),
-                      )
+                        )
                       : Expanded(
                           child: ListView.builder(
                             padding: EdgeInsets.all(0),

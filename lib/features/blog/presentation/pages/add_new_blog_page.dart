@@ -178,6 +178,7 @@ class _AddNewBlogPageState extends State<AddNewBlogPage> {
                 BlogField(
                   hintText: "Write your blog content here",
                   controller: contentController,
+                  maxLines: 4,
                 ),
                 const SizedBox(height: 24),
 

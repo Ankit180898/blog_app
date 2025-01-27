@@ -127,5 +127,8 @@ class AppTheme {
     floatingActionButtonTheme: _floatingActionButtonTheme(),
     chipTheme: _chipTheme(),
     inputDecorationTheme: _inputDecorationTheme(),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: AppPalette.secondaryColor.withAlpha(20),
+    ),
   );
 }

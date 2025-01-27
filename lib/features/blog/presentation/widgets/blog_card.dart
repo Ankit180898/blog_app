@@ -30,47 +30,29 @@ class BlogCard extends StatelessWidget {
                 children: [
                   Text(
                     blog.title,
-                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                    style: Theme.of(context).textTheme.displayMedium!.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppPalette.focusedColor),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge!
-                              .copyWith(
-                                  color:
-                                      AppPalette.focusedColor), // Default style
-                          children: [
-                            TextSpan(
-                              text: 'By: ',
-                              style: TextStyle(
-                                  fontWeight:
-                                      FontWeight.bold), // Bold for "By:"
-                            ),
-                            TextSpan(
-                              text: blog.posterName??"Unknown", // Author's name
-                              style: TextStyle(
-                                decoration: TextDecoration
-                                    .underline, // Underline the author's name
-                              ), // Style for the author's name
-                            ),
-                          ],
+                  RichText(
+                    text: TextSpan(
+                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          color: AppPalette.focusedColor), // Default style
+                      children: [
+                        TextSpan(
+                          text: 'By: ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold), // Bold for "By:"
                         ),
-                      ),
-                      Spacer(),
-                      Text(Constants.formatDate(blog.updatedAt),
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium!
-                              .copyWith(
-                                  fontStyle: FontStyle.italic,
-                                  color: AppPalette.textGrey)),
-                    ],
+                        TextSpan(
+                          text: blog.posterName ?? "Unknown", // Author's name
+                          style: TextStyle(
+                            decoration: TextDecoration
+                                .underline, // Underline the author's name
+                          ), // Style for the author's name
+                        ),
+                      ],
+                    ),
                   ),
                   const Divider(
                     thickness: 0.5,
@@ -149,6 +131,13 @@ class BlogCard extends StatelessWidget {
                         .textTheme
                         .bodyMedium!
                         .copyWith(color: AppPalette.focusedColor),
+                  ),
+                  Text(
+                    Constants.formatDate(blog.updatedAt),
+                    style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: AppPalette.focusedColor.withAlpha(80),
+                        ),
                   ),
                 ],
               ),

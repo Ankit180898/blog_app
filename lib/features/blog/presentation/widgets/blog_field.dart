@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 
 class BlogField extends StatelessWidget {
   final String hintText;
+  final int? maxLines;
   final TextEditingController controller;
-  const BlogField({
+  const BlogField(
+    {
     super.key,
     required this.hintText,
-    required this.controller,
+    required this.controller, 
+    this.maxLines,
   });
 
   @override
@@ -18,8 +21,7 @@ class BlogField extends StatelessWidget {
         focusedBorder: null,
         alignLabelWithHint: true,
       ),
-      
-      maxLines: null,
+      maxLines: maxLines,
       validator: (value) {
         if (value!.isEmpty) {
           return "$hintText is missing";
