@@ -21,7 +21,7 @@ abstract interface class BlogRepository {
 Future<Either<Failure, Blog>> editBlog({
     required String id,
     required String title,
-    required File image,
+    required File? image,
     required String content,
     required List<String> topics,
   });

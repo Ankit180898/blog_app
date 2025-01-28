@@ -11,6 +11,7 @@ import 'package:blog_app/features/blog/presentation/widgets/blog_field.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditUserBlogPage extends StatefulWidget {
   final String blogId;
@@ -86,7 +87,8 @@ class _EditUserBlogPageState extends State<EditUserBlogPage> {
               title: titleController.text.trim(),// Pass the existing image URL (if no new image)
               posterId: posterId,
               content: contentController.text.trim(),
-              topics: selectedTopics, image: null,
+              topics: selectedTopics, 
+              image: newImage,
             ),
           );
     } else {

@@ -71,8 +71,13 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Text(
                         "Sign In.",
-                        style: TextStyle(
-                            fontSize: 50, fontWeight: FontWeight.bold),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineLarge!
+                            .copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppPalette.whiteColor,
+                                fontSize: 50),
                       ),
                       const SizedBox(
                         height: 24,
@@ -105,7 +110,10 @@ class _LoginPageState extends State<LoginPage> {
                         child: RichText(
                           text: TextSpan(
                               text: "Don't have an account? ",
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: AppPalette.focusedColor),
                               children: [
                                 TextSpan(
                                     text: 'Sign Up',

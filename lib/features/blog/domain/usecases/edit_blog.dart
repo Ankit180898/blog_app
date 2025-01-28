@@ -24,13 +24,14 @@ class EditBlog {
 class EditBlogParams {
   final String id;
   final String title;
-  final File image;
+  final File? image; // Make the image parameter optional
   final String content;
   final List<String> topics;
+
   EditBlogParams({
     required this.id,
     required this.title,
-    required this.image,
+    this.image, // Make the image parameter optional
     required this.content,
     required this.topics,
   });

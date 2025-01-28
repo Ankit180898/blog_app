@@ -44,14 +44,15 @@ class DeleteBlogEvent extends BlogEvent {
 class EditBlogEvent extends BlogEvent {
   final String id;
   final String title;
-  final File? image;
-  final String posterId;
+  final File? image; // Make the image parameter optional
   final String content;
   final List<String> topics;
-  EditBlogEvent( {
+  final String posterId;
+
+  EditBlogEvent({
     required this.id,
     required this.title,
-    required this.image,
+    this.image, // Make the image parameter optional
     required this.content,
     required this.topics,
     required this.posterId,

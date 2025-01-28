@@ -88,20 +88,20 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     );
   }
 
-  void _onEditBlog(EditBlogEvent event, Emitter<BlogState> emit) async {
-    emit(BlogLoading());
-    final res = await _editBlog(EditBlogParams(
-      id: event.id,
-      title: event.title,
-      image: event.image!,
-      content: event.content,
-      topics: event.topics,
-    ));
-    res.fold(
-      (l) => emit(BlogFailure(l.message)),
-      (r) => emit(BlogUploadSuccess()),
-    );
-  }
+void _onEditBlog(EditBlogEvent event, Emitter<BlogState> emit) async {
+  emit(BlogLoading());
+  final res = await _editBlog(EditBlogParams(
+    id: event.id,
+    title: event.title,
+    image: event.image, // Pass the optional image
+    content: event.content,
+    topics: event.topics,
+  ));
+  res.fold(
+    (l) => emit(BlogFailure(l.message)),
+    (r) => emit(BlogEditSuccess()),
+  );
+}
   void _onDeleteBlog(DeleteBlogEvent event, Emitter<BlogState> emit) async {
     emit(BlogLoading());
     final res = await _deleteBlog(event.blogId);

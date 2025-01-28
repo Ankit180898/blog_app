@@ -74,8 +74,13 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: [
                       Text(
                         "Sign Up.",
-                        style: TextStyle(
-                            fontSize: 50, fontWeight: FontWeight.bold),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineLarge!
+                            .copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppPalette.whiteColor,
+                                fontSize: 50),
                       ),
                       const SizedBox(
                         height: 84,
@@ -104,7 +109,6 @@ class _SignUpPageState extends State<SignUpPage> {
                                       password: passwordController.text),
                                 );
                           }
-                         
                         },
                       ),
                       GestureDetector(
@@ -114,7 +118,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: RichText(
                           text: TextSpan(
                               text: "Already have an account? ",
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: AppPalette.focusedColor),
                               children: [
                                 TextSpan(
                                     text: 'Sign In',

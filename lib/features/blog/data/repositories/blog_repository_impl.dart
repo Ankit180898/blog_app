@@ -113,30 +113,35 @@ class BlogRepositoryImpl implements BlogRepository {
 Future<Either<Failure, Blog>> editBlog({
   required String id,
   required String title,
-  required File image,
+  required File? image, // Make the image parameter optional
   required String content,
   required List<String> topics,
 }) async {
   try {
-    // Convert the Blog entity to BlogModel
-    final blogModel = BlogModel(
-      id: id,
-      posterId: '', // You can pass the posterId if needed
+    // Fetch the existing blog to get the current image URL
+    final existingBlog = await blogRemoteDataSource.getBlogById(id);
+
+    // If no new image is provided, use the existing image URL
+    String imageUrl = existingBlog.imageUrl;
+
+    // If a new image is provided, upload it and update the image URL
+    if (image != null) {
+      imageUrl = await blogRemoteDataSource.uploadBlogImage(
+        blog: existingBlog,
+        image: image,
+      );
+    }
+
+    // Create the updated blog model
+    final updatedBlogModel = BlogModel(
+      id: existingBlog.id,
+      posterId: '',
       title: title,
       content: content,
-      imageUrl: '', // This will be updated after uploading the image
+      imageUrl: imageUrl,
       topics: topics,
       updatedAt: DateTime.now(),
     );
-
-    // Upload the new image if provided
-    final imageUrl = await blogRemoteDataSource.uploadBlogImage(
-      blog: blogModel,
-      image: image,
-    );
-
-    // Update the blog with the new image URL
-    final updatedBlogModel = blogModel.copyWith(imageUrl: imageUrl);
 
     // Update the blog in the database
     await blogRemoteDataSource.editBlog(

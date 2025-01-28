@@ -27,7 +27,6 @@ class BlogPage extends StatefulWidget {
 
 class _BlogPageState extends State<BlogPage> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All'; // Default category
 
   @override
   void initState() {
@@ -77,6 +76,17 @@ class _BlogPageState extends State<BlogPage> {
     );
   }
 
+  void _handleCategorySelection(String selectedValue, Function fetchAllBlogs,
+      Function filterBlogsByCategory) {
+    if (selectedValue == 'All') {
+      // Fetch all blogs if "All" is selected
+      fetchAllBlogs();
+    } else {
+      // Dispatch the filter event
+      filterBlogsByCategory(selectedValue);
+    }
+  }
+
   void _showFilterMenu(BuildContext context) async {
     final selectedValue = await showMenu<String>(
       context: context,
@@ -95,19 +105,15 @@ class _BlogPageState extends State<BlogPage> {
     );
 
     if (selectedValue != null) {
-      setState(() {
-        _selectedCategory = selectedValue;
-      });
-
-      if (selectedValue == 'All') {
-        // Fetch all blogs if "All" is selected
-        context.read<BlogBloc>().add(BlogFetchAllBlogs());
-      } else {
-        // Dispatch the filter event
-        context
+      _handleCategorySelection(
+        selectedValue,
+        () => context
             .read<BlogBloc>()
-            .add(FilterBlogPostsByCategoryEvent(selectedValue));
-      }
+            .add(BlogFetchAllBlogs()), // Fetch all blogs
+        (category) => context
+            .read<BlogBloc>()
+            .add(FilterBlogPostsByCategoryEvent(category)), // Filter blogs
+      );
     }
   }
 
@@ -149,18 +155,20 @@ class _BlogPageState extends State<BlogPage> {
                         const SizedBox(height: 16),
                         Text(
                           state.user.name,
-                          style: TextStyle(
-                            color: AppPalette.whiteColor,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .displayMedium!
+                              .copyWith(color: AppPalette.whiteColor),
+                        ),
+                        const SizedBox(
+                          height: 4,
                         ),
                         Text(
                           state.user.email,
-                          style: TextStyle(
-                            color: AppPalette.whiteColor.withOpacity(0.8),
-                            fontSize: 14,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall!
+                              .copyWith(color: AppPalette.textGrey),
                         ),
                       ],
                     ),

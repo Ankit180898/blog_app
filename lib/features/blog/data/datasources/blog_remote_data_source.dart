@@ -19,6 +19,7 @@ abstract interface class BlogRemoteDataSource {
     required BlogModel blog,
     File? image,
   });
+  Future<BlogModel> getBlogById(String id);
 }
 
 class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
@@ -128,10 +129,12 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
         .from('blogs')
         .select('*, profiles (name)') // Include profiles to get posterName
         .eq('poster_id', userId); // Fetch blogs by user ID
-    return response.map((blog) => BlogModel.fromMap(blog).copyWith(
-      posterId: blog['profiles']['poster_id'],
-      posterName: blog['profiles']['name'],
-    )).toList();
+    return response
+        .map((blog) => BlogModel.fromMap(blog).copyWith(
+              posterId: blog['profiles']['poster_id'],
+              posterName: blog['profiles']['name'],
+            ))
+        .toList();
   }
 
   @override
@@ -150,23 +153,67 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
     try {
       // If a new image is provided, upload it and update the blog's image URL
       if (image != null) {
+        print('Uploading new image for blog: ${blog.id}');
+
+        // Delete the existing image from storage
+        await supabaseClient.storage.from('blog_images').remove([blog.id]);
+
+        print('Existing image deleted');
+
         // Upload the new image to Supabase Storage
-        await supabaseClient.storage.from('blog_images').upload(blog.id, image);
+        await supabaseClient.storage
+            .from('blog_images')
+            .upload(blog.id, image, fileOptions: FileOptions(upsert: true));
+
+        print('Image uploaded successfully');
 
         // Get the public URL of the uploaded image
         final imageUrl =
             supabaseClient.storage.from('blog_images').getPublicUrl(blog.id);
 
+        print('Image URL: $imageUrl');
+
         // Update the blog's image URL in the database
         await supabaseClient
             .from('blogs')
             .update({'imageUrl': imageUrl}).eq('id', blog.id);
+
+        print('Blog image URL updated in the database');
       }
 
       // Update the blog content in the database
-      await supabaseClient.from('blogs').update(blog.toMap()).eq('id', blog.id);
+      await supabaseClient.from('blogs').update({
+        'title': blog.title,
+        'content': blog.content,
+        'topics': blog.topics,
+        'updated_at': blog.updatedAt.toIso8601String(),
+      }).eq('id', blog.id);
+
+      print('Blog content updated in the database');
     } on StorageException catch (e) {
+      print('StorageException: ${e.message}');
       throw ServerExceptions(e.message);
+    } on PostgrestException catch (e) {
+      print('PostgrestException: ${e.message}');
+      throw ServerExceptions(e.message);
+    } catch (e) {
+      print('Unexpected error: $e');
+      throw ServerExceptions(e.toString());
+    }
+  }
+
+  @override
+  Future<BlogModel> getBlogById(String id) async {
+    try {
+      // Fetch the blog data from the database
+      final blogData = await supabaseClient
+          .from('blogs')
+          .select()
+          .eq('id', id)
+          .single(); // Use .single() to fetch a single record
+
+      // Convert the data to a BlogModel
+      return BlogModel.fromMap(blogData);
     } on PostgrestException catch (e) {
       throw ServerExceptions(e.message);
     } catch (e) {
