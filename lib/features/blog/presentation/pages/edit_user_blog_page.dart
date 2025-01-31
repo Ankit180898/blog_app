@@ -11,7 +11,6 @@ import 'package:blog_app/features/blog/presentation/widgets/blog_field.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 
 class EditUserBlogPage extends StatefulWidget {
   final String blogId;

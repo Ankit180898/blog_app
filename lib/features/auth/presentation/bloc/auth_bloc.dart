@@ -1,7 +1,10 @@
+
 import 'package:blog_app/core/common/cubits/app_user/app_user_cubit.dart';
 import 'package:blog_app/core/usecase/usecase.dart';
 import 'package:blog_app/core/common/entities/user.dart';
 import 'package:blog_app/features/auth/domain/usecases/current_user.dart';
+import 'package:blog_app/features/auth/domain/usecases/delete_account.dart';
+import 'package:blog_app/features/auth/domain/usecases/edit_user.dart';
 import 'package:blog_app/features/auth/domain/usecases/user_login.dart';
 import 'package:blog_app/features/auth/domain/usecases/user_logout.dart';
 import 'package:blog_app/features/auth/domain/usecases/user_sign_up.dart';
@@ -17,6 +20,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final CurrentUser _currentUser;
   final UserLogout _userLogout;
   final AppUserCubit _appUserCubit;
+  final EditProfile _editProfile;
+  final DeleteAccount _deleteAccount;
 
   AuthBloc({
     required UserSignUp userSignUp,
@@ -24,17 +29,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required CurrentUser currentUser,
     required UserLogout userLogout,
     required AppUserCubit appUserCubit,
+    required EditProfile editProfile,
+    required DeleteAccount deleteAccount,
   })  : _userSignUp = userSignUp,
         _userLogin = userLogin,
         _currentUser = currentUser,
         _userLogout = userLogout,
         _appUserCubit = appUserCubit,
+        _editProfile = editProfile,
+        _deleteAccount = deleteAccount,
         super(AuthInitial()) {
     on<AuthEvent>((_, emit) => emit(AuthLoading()));
     on<AuthSignUp>(_onAuthSignUp);
     on<AuthLogin>(_onAuthLogin);
     on<AuthLoggedIn>(_isUserLoggedIn);
     on<AuthLogout>(_onAuthLogout);
+    on<AuthEditUser>(_onAuthEditUser);
+    on<AuthDeleteUser>(_onAuthDeleteUser);
   }
 
   void _onAuthSignUp(
@@ -89,5 +100,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final res = await _userLogout(NoParams());
     res.fold((l) => emit(AuthFailure(message: l.message)),
         (_) => emit(AuthLogoutSuccess()));
+  }
+
+  void _onAuthEditUser(
+    AuthEditUser event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final res = await _editProfile(EditUserParams(userId: event.userId));
+    res.fold(
+      (l) => emit(AuthFailure(message: l.message)),
+      (r) => _emitAuthSuccess(r, emit),
+    );
+  }
+
+  void _onAuthDeleteUser(
+    AuthDeleteUser event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final res = await _deleteAccount(userId: event.userId);
+    res.fold(
+      (l) => emit(AuthFailure(message: l.message)),
+      (_) => emit(AuthDeleteSuccess()),
+    );
   }
 }

@@ -8,10 +8,24 @@ abstract interface class AuthRepository {
     required String email,
     required String password,
   });
+
   Future<Either<Failure, User>> loginWithEmailPassword({
     required String email,
     required String password,
   });
+
   Future<Either<Failure, User>> currentUser();
-  Future<Either<Failure,User>> logout();
+
+  Future<Either<Failure, User>> logout();
+
+  // Edit user profile
+  Future<Either<Failure, User>> editUser({
+    required String userId,
+    String? name,
+    String? email,
+    String? password,
+  });
+
+  // Delete user account
+  Future<Either<Failure, void>> deleteUser({required String userId});
 }

@@ -29,6 +29,7 @@ class _UserBlogsPageState extends State<UserBlogsPage> {
         (context.read<AppUserCubit>().state as AppUserLoggedIn).user.id;
     context.read<BlogBloc>().add(FetchUserBlogsEvent(userId));
   }
+  
 
   void _deleteBlog(String blogId) {
     showDialog(
@@ -154,20 +155,15 @@ class _UserBlogsPageState extends State<UserBlogsPage> {
                                     height: MediaQuery.of(context).size.height *
                                         0.35,
                                     child: Center(
-                                      child: Hero(
-                                        tag: 'blog-image-${blog.id}',
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          child: CachedNetworkImage(
-                                            imageUrl: blog.imageUrl,
-                                            fit: BoxFit.fill,
-                                            placeholder: (context, url) =>
-                                                const Center(child: Loader()),
-                                            errorWidget:
-                                                (context, url, error) =>
-                                                    const Icon(Icons.error),
-                                          ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: CachedNetworkImage(
+                                          imageUrl: blog.imageUrl,
+                                          fit: BoxFit.fill,
+                                          placeholder: (context, url) =>
+                                              const Center(child: Loader()),
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error),
                                         ),
                                       ),
                                     ),

@@ -36,7 +36,12 @@ class SplashPage extends StatelessWidget {
               const SizedBox(
                 height: 14,
               ),
-              Center(child: Image.asset("assets/images/background_gif.png")),
+              Center(
+                  child: Stack(
+                children: [
+                  Image.asset("assets/images/background_gif.png"),
+                ],
+              )),
               const SizedBox(
                 height: 14,
               ),

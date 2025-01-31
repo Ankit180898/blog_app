@@ -15,6 +15,14 @@ abstract class AuthRemoteDataSource {
   });
   Future<UserModel?> getCurrentUserData();
   Future<void> logout();
+  Future<void> deleteUser({required String userId});
+
+  Future<UserModel> editProfile({
+    required String userId,
+    String? name,
+    String? email,
+    String? password,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -87,6 +95,56 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await supabaseClient.auth.signOut();
     } on AuthException catch (e) {
       throw ServerExceptions(e.message);
+    } catch (e) {
+      throw ServerExceptions(e.toString());
+    }
+  }
+
+  @override
+  Future<void> deleteUser({required String userId}) async {
+    try {
+      // Delete user profile from the 'profiles' table
+      await supabaseClient.from('profiles').delete().eq('id', userId);
+    } catch (e) {
+      throw ServerExceptions(e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> editProfile({
+    required String userId,
+    String? name,
+    String? email,
+    String? password,
+  }) async {
+    try {
+      // Update email and password in Supabase Auth
+      if (email != null || password != null) {
+        await supabaseClient.auth.updateUser(
+          UserAttributes(
+            email: email,
+            password: password,
+          ),
+        );
+      }
+
+      // Prepare updates for the profiles table
+      final updates = <String, dynamic>{};
+      if (name != null) updates['name'] = name;
+
+      // Update name in the profiles table if provided
+      if (updates.isNotEmpty) {
+        await supabaseClient.from('profiles').update(updates).eq('id', userId);
+      }
+
+      // Fetch updated user data
+      final updatedUserData = await supabaseClient
+          .from('profiles')
+          .select()
+          .eq('id', userId)
+          .single();
+
+      return UserModel.fromJson(updatedUserData);
     } catch (e) {
       throw ServerExceptions(e.toString());
     }

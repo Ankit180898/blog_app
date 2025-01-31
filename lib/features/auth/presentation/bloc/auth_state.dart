@@ -23,4 +23,10 @@ final class AuthFailure extends AuthState {
 
 final class AuthLogoutSuccess extends AuthState {}
 
+final class AuthEditSuccess extends AuthState {
+  final User user;
 
+  const AuthEditSuccess({required this.user});
+}
+
+final class AuthDeleteSuccess extends AuthState {}

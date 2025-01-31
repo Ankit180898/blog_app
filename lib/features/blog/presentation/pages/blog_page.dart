@@ -1,14 +1,10 @@
-import 'package:blog_app/core/common/cubits/app_user/app_user_cubit.dart';
 import 'package:blog_app/core/common/widgets/loader.dart';
 import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/core/utils/show_snackbar.dart';
-import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
-import 'package:blog_app/features/blog/presentation/pages/add_new_blog_page.dart';
-import 'package:blog_app/features/blog/presentation/pages/your_blogs_page.dart';
 import 'package:blog_app/features/blog/presentation/widgets/blog_card.dart';
-import 'package:blog_app/features/splash/pages/splash_page.dart';
+import 'package:blog_app/features/blog/presentation/widgets/custom_drawer.dart';
 import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,42 +34,6 @@ class _BlogPageState extends State<BlogPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _logout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return CupertinoAlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: [
-            // Cancel Button
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-              child: const Text('Cancel'),
-            ),
-
-            // Logout Button
-            TextButton(
-              onPressed: () {
-                // Call the logoutUser method
-                context.read<AuthBloc>().add(AuthLogout());
-
-                // Close the dialog
-                Navigator.pop(context);
-
-                // Navigate to the SplashPage or LoginPage
-                Navigator.of(context).pushReplacement(SplashPage.route());
-              },
-              child: const Text('Logout'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _handleCategorySelection(String selectedValue, Function fetchAllBlogs,
@@ -129,102 +89,9 @@ class _BlogPageState extends State<BlogPage> {
         surfaceTintColor: AppPalette.transparent,
         centerTitle: true,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            BlocBuilder<AppUserCubit, AppUserState>(
-              builder: (context, state) {
-                if (state is AppUserLoggedIn) {
-                  return DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: AppPalette.focusedColor,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: AppPalette.whiteColor,
-                          child: Icon(
-                            Icons.person,
-                            size: 40,
-                            color: AppPalette.focusedColor,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          state.user.name,
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayMedium!
-                              .copyWith(color: AppPalette.whiteColor),
-                        ),
-                        const SizedBox(
-                          height: 4,
-                        ),
-                        Text(
-                          state.user.email,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall!
-                              .copyWith(color: AppPalette.textGrey),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                return const DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: AppPalette.focusedColor,
-                  ),
-                  child: Text(
-                    'Blog Menu',
-                    style: TextStyle(
-                      color: AppPalette.whiteColor,
-                      fontSize: 24,
-                    ),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('Add New Blog'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-
-                Navigator.push(context, AddNewBlogPage.route());
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.drafts),
-              title: const Text('Your Blogs'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                Navigator.push(context,
-                    UserBlogsPage.route()); // Navigate to UserBlogsPage
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () {
-                _logout(context);
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: CustomDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
         child: Column(
           children: [
             // Search Bar
@@ -307,13 +174,13 @@ class _BlogPageState extends State<BlogPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, AddNewBlogPage.route());
-        },
-        backgroundColor: AppPalette.focusedColor,
-        child: const Icon(Icons.add, color: AppPalette.whiteColor),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.push(context, AddNewBlogPage.route());
+      //   },
+      //   backgroundColor: AppPalette.focusedColor,
+      //   child: const Icon(Icons.add, color: AppPalette.whiteColor),
+      // ),
     );
   }
 }

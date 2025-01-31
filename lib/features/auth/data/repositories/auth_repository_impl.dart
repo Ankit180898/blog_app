@@ -100,4 +100,45 @@ class AuthRepositoryImpl implements AuthRepository {
       return left(Failure(e.message));
     }
   }
+
+@override
+  Future<Either<Failure, void>> deleteUser({required String userId}) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(Failure(Constants.noConnectionErrorMessage));
+      }
+      await remoteDataSource.deleteUser(userId: userId);
+      return right(null);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+
+  
+   @override
+  Future<Either<Failure, User>> editUser({
+    required String userId,
+    String? name,
+    String? email,
+    String? password,
+  }) async {
+    try {
+      if (!await connectionChecker.isConnected) {
+        return left(Failure(Constants.noConnectionErrorMessage));
+      }
+
+      final updatedUser = await remoteDataSource.editProfile(
+        userId: userId,
+        name: name,
+        email: email,
+        password: password,
+      );
+
+      return right(updatedUser);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
 }
