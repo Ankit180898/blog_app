@@ -98,6 +98,22 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: _buildListTileSection(
+              context,
+              [
+                _buildListTile(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  onTap: () {
+                    _logout(context);
+                    // Handle report a bug action
+                  },
+                ),
+              ],
+            ),
+          ),
           _buildMadeByText(context),
         ],
       ),
@@ -160,7 +176,7 @@ class SettingsPage extends StatelessWidget {
   // Widget for "Made by Ankit" text
   Widget _buildMadeByText(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 32.0),
+      padding: const EdgeInsets.only(bottom: 24.0),
       child: Center(
         child: GestureDetector(
           onTap: () async {

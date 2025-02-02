@@ -1,26 +1,39 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:blog_app/features/blog/presentation/pages/your_blogs_page.dart';
+import 'package:flutter/material.dart';
+
 import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/features/blog/presentation/pages/add_new_blog_page.dart';
 import 'package:blog_app/features/blog/presentation/pages/blog_page.dart';
 import 'package:blog_app/features/settings/presentation/pages/settings_page.dart';
-import 'package:flutter/material.dart';
 
 class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+  final int? index;
+  const BottomNavBar({
+    super.key,
+    this.index,
+  });
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
 
   // List of pages corresponding to each navigation item
   final List<Widget> _pages = [
-    const BlogPage(), // Replace with your Home page
-    const AddNewBlogPage(), // Replace with your Add page
-    const SettingsPage(), // Replace with your Activity page
-    const SettingsPage(), // Replace with your Profile page
+    const BlogPage(), // Home page
+    const AddNewBlogPage(), // Add page
+    const UserBlogsPage(), // Activity page
+    const SettingsPage(), // Profile page
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.index ?? 0;
+  }
 
   void _onItemTapped(int index) {
     setState(() {

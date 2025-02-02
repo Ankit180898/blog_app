@@ -57,7 +57,7 @@ class _MyAppState extends State<MyApp> {
         },
         builder: (context, isLoggedIn) {
           if (isLoggedIn) {
-            return const BottomNavBar();
+            return const BottomNavBar(index: 0,);
           }
           return const SplashPage();
         },

@@ -4,6 +4,7 @@ import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/features/blog/presentation/pages/add_new_blog_page.dart';
 import 'package:blog_app/features/blog/presentation/pages/your_blogs_page.dart';
+import 'package:blog_app/features/navigation/navigation.dart';
 import 'package:blog_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:blog_app/features/splash/pages/splash_page.dart';
 import 'package:flutter/cupertino.dart';
@@ -34,28 +35,53 @@ class CustomDrawer extends StatelessWidget {
           ),
           const Divider(color: Colors.grey, thickness: 0.5),
           _buildDrawerItem(Icons.add, "Add new article", () {
-            Navigator.pop(context);
-            Navigator.push(context, AddNewBlogPage.route());
+            Navigator.pop(context); // Close the drawer
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BottomNavBar(
+                    index: 1), // Navigate to BottomNavBar with index 1
+              ),
+            );
           }),
           _buildDrawerItem(Icons.article, "Your articles", () {
             Navigator.pop(context);
-            Navigator.push(context, UserBlogsPage.route());
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BottomNavBar(
+                    index: 2), // Navigate to BottomNavBar with index 1
+              ),
+            );
           }),
-          _buildDrawerItem(Icons.timeline, "Your activity", () {
-            // Navigate to activity page (if you have one)
-            Navigator.pop(context);
-          }),
-          _buildDrawerItem(Icons.subscriptions, "Your subscriptions", () {
-            // Navigate to subscriptions page (if you have one)
-            Navigator.pop(context);
-          }),
+          // _buildDrawerItem(Icons.timeline, "Your activity", () {
+          //   // Navigate to activity page (if you have one)
+          //   Navigator.pop(context);
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => BottomNavBar(
+          //           index: 2), // Navigate to BottomNavBar with index 1
+          //     ),
+          //   );
+          // }),
+          // _buildDrawerItem(Icons.subscriptions, "Your subscriptions", () {
+          //   // Navigate to subscriptions page (if you have one)
+          //   Navigator.pop(context);
+          // }),
           _buildDrawerItem(Icons.settings, "Settings", () {
             Navigator.pop(context);
-            Navigator.push(context, SettingsPage.route());
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BottomNavBar(
+                    index: 3), // Navigate to BottomNavBar with index 1
+              ),
+            );
           }),
-          _buildDrawerItem(Icons.logout, "Log out", () {
-            _logout(context);
-          }),
+          // _buildDrawerItem(Icons.logout, "Log out", () {
+          //   _logout(context);
+          // }),
         ],
       ),
     );
