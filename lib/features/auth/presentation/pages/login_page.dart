@@ -6,6 +6,7 @@ import 'package:blog_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:blog_app/features/auth/presentation/widgets/auth_button.dart';
 import 'package:blog_app/features/auth/presentation/widgets/auth_field.dart';
 import 'package:blog_app/features/blog/presentation/pages/blog_page.dart';
+import 'package:blog_app/features/navigation/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -54,8 +55,11 @@ class _LoginPageState extends State<LoginPage> {
                 } else if (state is AuthSuccess) {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    BlogPage.route(),
-                    (route) => false,
+                    MaterialPageRoute(
+                      builder: (context) => BottomNavBar(
+                          index: 0), // Wrap BottomNavBar in MaterialPageRoute
+                    ),
+                    (route) => false, // Remove all previous routes
                   );
                 }
               },

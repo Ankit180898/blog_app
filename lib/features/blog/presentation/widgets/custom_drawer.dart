@@ -2,10 +2,7 @@ import 'package:blog_app/core/common/cubits/app_user/app_user_cubit.dart';
 import 'package:blog_app/core/common/entities/user.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:blog_app/features/blog/presentation/pages/add_new_blog_page.dart';
-import 'package:blog_app/features/blog/presentation/pages/your_blogs_page.dart';
 import 'package:blog_app/features/navigation/navigation.dart';
-import 'package:blog_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:blog_app/features/splash/pages/splash_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +24,9 @@ class CustomDrawer extends StatelessWidget {
           BlocBuilder<AppUserCubit, AppUserState>(
             builder: (context, state) {
               if (state is AppUserLoggedIn) {
+                print(
+                    'User data: ${state.user.name}, ${state.user.email}'); // Debug print
+
                 return _buildUserProfile(state.user);
               } else {
                 return _buildGuestHeader();

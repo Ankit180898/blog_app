@@ -56,14 +56,6 @@ class SettingsPage extends StatelessWidget {
                         },
                       ),
                       _buildListTile(
-                        icon: Icons.logout_rounded,
-                        title: 'Logout',
-                        onTap: () {
-                          // Handle logout action
-                          _logout(context);
-                        },
-                      ),
-                      _buildListTile(
                         icon: CupertinoIcons.delete_simple,
                         title: 'Delete Account',
                         onTap: () {
@@ -181,9 +173,13 @@ class SettingsPage extends StatelessWidget {
         child: GestureDetector(
           onTap: () async {
             const url =
-                'https://ankitdev18.netlify.app/'; // Replace with your portfolio link
-            if (await canLaunchUrl(Uri.parse(url))) {
-              await launchUrl(Uri.parse(url));
+                "https://ankitdev18.netlify.app/"; // Replace with your portfolio link
+            if (await canLaunchUrl(
+              Uri.parse(url),
+            )) {
+              await launchUrl(
+                Uri.parse(url),
+              );
             } else {
               showSnackbar(context, "Couldn't launch $url");
             }
