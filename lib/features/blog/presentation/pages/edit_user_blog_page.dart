@@ -8,6 +8,7 @@ import 'package:blog_app/core/utils/show_snackbar.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
 import 'package:blog_app/features/blog/presentation/pages/blog_page.dart';
 import 'package:blog_app/features/blog/presentation/widgets/blog_field.dart';
+import 'package:blog_app/features/navigation/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -83,10 +84,11 @@ class _EditUserBlogPageState extends State<EditUserBlogPage> {
       context.read<BlogBloc>().add(
             EditBlogEvent(
               id: widget.blogId,
-              title: titleController.text.trim(),// Pass the existing image URL (if no new image)
+              title: titleController.text
+                  .trim(), // Pass the existing image URL (if no new image)
               posterId: posterId,
               content: contentController.text.trim(),
-              topics: selectedTopics, 
+              topics: selectedTopics,
               image: newImage,
             ),
           );
@@ -120,7 +122,10 @@ class _EditUserBlogPageState extends State<EditUserBlogPage> {
           } else if (state is BlogEditSuccess) {
             Navigator.pushAndRemoveUntil(
               context,
-              BlogPage.route(),
+              MaterialPageRoute(
+                builder: (context) => BottomNavBar(
+                    index: 2), // Navigate to BottomNavBar with index 1
+              ),
               (route) => false,
             );
           }
