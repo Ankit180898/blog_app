@@ -128,7 +128,7 @@ class AppTheme {
     chipTheme: _chipTheme(),
     inputDecorationTheme: _inputDecorationTheme(),
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      circularTrackColor: AppPalette.secondaryColor.withAlpha(20),
-    ),
+        color: AppPalette.secondaryColor,
+        circularTrackColor: AppPalette.secondaryColor.withAlpha(20)),
   );
 }

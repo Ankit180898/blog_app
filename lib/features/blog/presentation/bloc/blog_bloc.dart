@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:blog_app/core/usecase/usecase.dart';
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
@@ -20,7 +21,10 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
   final FilterBlogPostsByCategory _filterBlogPostsByCategory;
   final EditBlog _editBlog;
   final DeleteUserBlog _deleteBlog; // Add this
-  final GetUserBlogs _getUserBlogs; //
+  final GetUserBlogs _getUserBlogs;
+  final bool _isFetching = false;
+  final int _limit = 10;
+  Timer? _debounce;
 
   BlogBloc({
     required UploadBlog uploadBlog,
@@ -38,7 +42,6 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
         _deleteBlog = deleteBlog,
         _getUserBlogs = getUserBlogs,
         super(BlogInitial()) {
-    on<BlogEvent>((event, emit) => emit(BlogLoading()));
     on<BlogUpload>(_onBlogUpload);
     on<BlogFetchAllBlogs>(_onGetAllBlogs);
     on<SearchBlogPostsEvent>(_onSearchBlogPosts);
@@ -49,6 +52,8 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
   }
 
   void _onBlogUpload(BlogUpload event, Emitter<BlogState> emit) async {
+    emit(BlogLoading()); // Add loading state here
+
     final res = await _uploadBlog(UploadBlogParams(
       posterId: event.posterId,
       title: event.title,
@@ -63,6 +68,8 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
   }
 
   void _onGetAllBlogs(BlogFetchAllBlogs event, Emitter<BlogState> emit) async {
+    emit(BlogLoading()); // Add loading state here
+
     final res = await _getAllBlogs(NoParams());
     res.fold(
       (l) => emit(BlogFailure(l.message)),
@@ -72,6 +79,8 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
 
   void _onSearchBlogPosts(
       SearchBlogPostsEvent event, Emitter<BlogState> emit) async {
+    emit(BlogLoading()); // Add loading state here
+
     final res = await _searchBlogPosts(event.query);
     res.fold(
       (l) => emit(BlogFailure(l.message)),
@@ -81,6 +90,8 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
 
   void _onFilterBlogPostsByCategory(
       FilterBlogPostsByCategoryEvent event, Emitter<BlogState> emit) async {
+    emit(BlogLoading()); // Add loading state here
+
     final res = await _filterBlogPostsByCategory(event.category);
     res.fold(
       (l) => emit(BlogFailure(l.message)),
@@ -88,20 +99,21 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     );
   }
 
-void _onEditBlog(EditBlogEvent event, Emitter<BlogState> emit) async {
-  emit(BlogLoading());
-  final res = await _editBlog(EditBlogParams(
-    id: event.id,
-    title: event.title,
-    image: event.image, // Pass the optional image
-    content: event.content,
-    topics: event.topics,
-  ));
-  res.fold(
-    (l) => emit(BlogFailure(l.message)),
-    (r) => emit(BlogEditSuccess()),
-  );
-}
+  void _onEditBlog(EditBlogEvent event, Emitter<BlogState> emit) async {
+    emit(BlogLoading());
+    final res = await _editBlog(EditBlogParams(
+      id: event.id,
+      title: event.title,
+      image: event.image, // Pass the optional image
+      content: event.content,
+      topics: event.topics,
+    ));
+    res.fold(
+      (l) => emit(BlogFailure(l.message)),
+      (r) => emit(BlogEditSuccess()),
+    );
+  }
+
   void _onDeleteBlog(DeleteBlogEvent event, Emitter<BlogState> emit) async {
     emit(BlogLoading());
     final res = await _deleteBlog(event.blogId);
@@ -111,7 +123,8 @@ void _onEditBlog(EditBlogEvent event, Emitter<BlogState> emit) async {
     );
   }
 
-  void _onFetchUserBlogs(FetchUserBlogsEvent event, Emitter<BlogState> emit) async {
+  void _onFetchUserBlogs(
+      FetchUserBlogsEvent event, Emitter<BlogState> emit) async {
     emit(BlogLoading());
     final res = await _getUserBlogs(event.userId);
     res.fold(

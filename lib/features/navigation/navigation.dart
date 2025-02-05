@@ -46,9 +46,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
         elevation: 0,
-        backgroundColor: AppPalette.secondaryColor.withAlpha(10),
         currentIndex: _selectedIndex,
+        backgroundColor: AppPalette.whiteColor,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppPalette.focusedColor, // Customize as needed

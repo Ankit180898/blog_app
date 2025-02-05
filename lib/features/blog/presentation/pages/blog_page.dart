@@ -4,6 +4,7 @@ import 'package:blog_app/core/theme/app_palette.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
 import 'package:blog_app/features/blog/presentation/widgets/blog_card.dart';
 import 'package:blog_app/features/blog/presentation/widgets/custom_drawer.dart';
+import 'package:dotlottie_loader/dotlottie_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,15 +18,14 @@ class BlogPage extends StatefulWidget {
   State<BlogPage> createState() => _BlogPageState();
 }
 
-class _BlogPageState extends State<BlogPage> {
+class _BlogPageState extends State<BlogPage>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
-  late LottieBuilder _lottieAnimation;
 
   @override
   void initState() {
     super.initState();
     context.read<BlogBloc>().add(BlogFetchAllBlogs());
-    _lottieAnimation = Lottie.asset("assets/images/empty_state.lottie");
   }
 
   @override
@@ -72,7 +72,11 @@ class _BlogPageState extends State<BlogPage> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -118,27 +122,53 @@ class _BlogPageState extends State<BlogPage> {
 
             // Blog List
             BlocBuilder<BlogBloc, BlogState>(
+              buildWhen: (previous, current) =>
+                  previous != current, // Only rebuild when state changes
+
               builder: (context, state) {
                 if (state is BlogLoading) {
                   return const Loader();
                 }
                 if (state is BlogsDisplaySuccess) {
-                  if (state.blogs.isEmpty) {
-                    return _lottieAnimation;
-                  }
-                  return Expanded(
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: state.blogs.length,
-                      itemBuilder: (context, index) {
-                        final blog = state.blogs[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: BlogCard(blog: blog),
+                  return state.blogs.isEmpty
+                      ? Center(
+                          child: DotLottieLoader.fromAsset(
+                              "assets/images/empty_state.lottie",
+                              frameBuilder: (ctx, dotlottie) {
+                            if (dotlottie != null) {
+                              return Lottie.memory(
+                                  dotlottie.animations.values.single);
+                            } else {
+                              return Container();
+                            }
+                          }),
+                        )
+                      : Expanded(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            cacheExtent: 500, // Preload content to reduce lag
+
+                            padding: EdgeInsets.zero,
+                            itemCount: state.blogs.length,
+                            itemBuilder: (context, index) {
+                              final blog = state.blogs[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 12.0),
+                                child: BlogCard(
+                                  key: ValueKey(blog.id), // Use a unique key
+                                  blog: blog,
+                                ),
+                              );
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                              return Divider(
+                                color: AppPalette.textGrey,
+                                thickness: 0.5,
+                              );
+                            },
+                          ),
                         );
-                      },
-                    ),
-                  );
                 }
                 return const SizedBox();
               },

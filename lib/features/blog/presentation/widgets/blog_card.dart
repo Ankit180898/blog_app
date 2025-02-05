@@ -1,10 +1,12 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:blog_app/core/common/widgets/loader.dart';
 import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
+import 'package:blog_app/core/utils/calculate_reading_time.dart';
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
 import 'package:blog_app/features/blog/presentation/pages/blog_detail_page.dart';
-import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class BlogCard extends StatelessWidget {
   final Blog blog;
@@ -12,143 +14,137 @@ class BlogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            BlogDetailPage.route(blog: blog),
-          ),
-          child: Card(
-            elevation: 0,
-            color: AppPalette.secondaryColor.withAlpha(20),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 8,
-                children: [
-                  Text(
-                    blog.title,
-                    style: Theme.of(context).textTheme.displayMedium!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppPalette.focusedColor),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                          color: AppPalette.focusedColor), // Default style
-                      children: [
-                        TextSpan(
-                          text: 'By: ',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold), // Bold for "By:"
-                        ),
-                        TextSpan(
-                          text: blog.posterName ?? "Unknown", // Author's name
-                          style: TextStyle(
-                            decoration: TextDecoration
-                                .underline, // Underline the author's name
-                          ), // Style for the author's name
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(
-                    thickness: 0.5,
-                    indent: 20,
-                    endIndent: 20,
-                  ),
-                  Stack(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              BlogDetailPage.route(blog: blog),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    spacing: 8,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.35,
-                        child: Center(
-                          child: Hero(
-                            tag:
-                                'blog-image-${blog.id}', // Unique tag for the hero animation
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: CachedNetworkImage(
-                                imageUrl: blog.imageUrl,
-                                fit: BoxFit.fill,
-                                placeholder: (context, url) =>
-                                    Center(child: const Loader()),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
+                      RichText(
+                        text: TextSpan(
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium
+                              ?.copyWith(
+                                fontSize: 12,
+                                color: AppPalette.focusedColor.withAlpha(100),
+                              ),
+                          children: [
+                            const TextSpan(text: "In "), // Regular text
+                            TextSpan(
+                              text: blog.topics.isNotEmpty
+                                  ? blog.topics.first
+                                  : 'Blog', // Highlighted topic
+                              style: TextStyle(
+                                color: AppPalette
+                                    .focusedColor, // Different color for emphasis
                               ),
                             ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: Wrap(
-                          children: [
-                            if (blog.topics.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Chip(
-                                  label: Text(
-                                    blog.topics.first,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall!
-                                        .copyWith(
-                                            color: AppPalette.focusedColor),
-                                  ),
-                                  color: WidgetStatePropertyAll(
-                                      AppPalette.transparent),
-                                ),
+                            const TextSpan(text: " by "), // Regular text
+                            TextSpan(
+                              text: blog.posterName ??
+                                  "Unknown", // Highlighted author name
+                              style: TextStyle(
+                                color: AppPalette
+                                    .focusedColor, // Different color for emphasis
                               ),
-                            if (blog.topics.length > 1)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 12.0),
-                                child: Chip(
-                                  label: Text(
-                                    '+${blog.topics.length - 1}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall!
-                                        .copyWith(
-                                            color: AppPalette.focusedColor),
-                                  ),
-                                  color: WidgetStatePropertyAll(
-                                      AppPalette.transparent),
-                                ),
-                              ),
+                            ),
                           ],
                         ),
-                      )
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        blog.title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppPalette.focusedColor),
+                      ),
+                      // const SizedBox(height: 4),
+                      Text(
+                        blog.content,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppPalette.focusedColor.withAlpha(150),
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(
+                            Constants.formatDate(blog.updatedAt),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: AppPalette.focusedColor.withAlpha(120),
+                                ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            "${calculateReadingTime(blog.content)} min read",
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: AppPalette.focusedColor.withAlpha(120),
+                                ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Icon(CupertinoIcons.hand_thumbsup, size: 14),
+                          const SizedBox(
+                            width: 4,
+                          ),
+                          // Text(
+                          //   "2",
+                          //   style: Theme.of(context)
+                          //       .textTheme
+                          //       .labelSmall
+                          //       ?.copyWith(
+                          //         color: AppPalette.focusedColor.withAlpha(120),
+                          //       ),
+                          // ),
+                          Spacer(),
+                          IconButton(
+                              onPressed: () {},
+                              icon: Icon(CupertinoIcons.ellipsis_vertical))
+                        ],
+                      ),
                     ],
                   ),
-                  Text(
-                    blog.content,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium!
-                        .copyWith(color: AppPalette.focusedColor),
+                ),
+                if (blog.imageUrl.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, top: 40.0),
+                    child: CachedNetworkImage(
+                      imageUrl: blog.imageUrl,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          Center(child: const Loader()),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
                   ),
-                  Text(
-                    Constants.formatDate(blog.updatedAt),
-                    style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: AppPalette.focusedColor.withAlpha(80),
-                        ),
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
-        ),
-        Positioned(
-            right: 0,
-            top: 8,
-            child: IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)))
-      ],
+        ],
+      ),
     );
   }
 }

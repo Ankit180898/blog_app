@@ -12,3 +12,10 @@ class GetAllBlogs implements UseCase<List<Blog>, NoParams> {
     return await blogRepository.getAllBlogs();
   }
 }
+
+class PageParams {
+  final int page;
+  final int limit;
+
+  PageParams({required this.page, required this.limit});
+}
