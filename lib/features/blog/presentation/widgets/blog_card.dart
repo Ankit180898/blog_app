@@ -129,15 +129,19 @@ class BlogCard extends StatelessWidget {
                 if (blog.imageUrl.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(left: 10, top: 40.0),
-                    child: CachedNetworkImage(
-                      imageUrl: blog.imageUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          Center(child: const Loader()),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
+                    child: Hero(
+                      tag:
+                      'blog-image-${blog.id}',
+                      child: CachedNetworkImage(
+                        imageUrl: blog.imageUrl,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            Center(child: const Loader()),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ),
                     ),
                   ),
               ],

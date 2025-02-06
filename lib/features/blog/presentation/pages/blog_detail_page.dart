@@ -1,6 +1,7 @@
 import 'package:blog_app/core/common/widgets/loader.dart';
 import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
+import 'package:blog_app/core/utils/calculate_reading_time.dart';
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -25,6 +26,54 @@ class BlogDetailPage extends StatelessWidget {
             Text(
               blog.title,
               style: Theme.of(context).textTheme.displayLarge,
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            RichText(
+              text: TextSpan(
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge!
+                    .copyWith(color: AppPalette.focusedColor), // Default style
+                children: [
+                  TextSpan(
+                    text: 'By: ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold), // Bold for "By:"
+                  ),
+                  TextSpan(
+                    text: blog.posterName ?? 'Unknown', // Author's name
+                    style: TextStyle(
+                      decoration: TextDecoration
+                          .underline, // Underline the author's name
+                    ), // Style for the author's name
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  Constants.formatDate(blog.updatedAt),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppPalette.focusedColor.withAlpha(120),
+                      ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  "${calculateReadingTime(blog.content)} min read",
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppPalette.focusedColor.withAlpha(120),
+                      ),
+                ),
+                const SizedBox(width: 12),
+              ],
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -67,59 +116,27 @@ class BlogDetailPage extends StatelessWidget {
                   .toList(),
             ),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 8,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                            color: AppPalette.focusedColor), // Default style
-                        children: [
-                          TextSpan(
-                            text: 'By: ',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold), // Bold for "By:"
-                          ),
-                          TextSpan(
-                            text: blog.posterName ?? 'Unknown', // Author's name
-                            style: TextStyle(
-                              decoration: TextDecoration
-                                  .underline, // Underline the author's name
-                            ), // Style for the author's name
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      Constants.formatDate(blog.updatedAt),
-                      style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: AppPalette.textGrey),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(CupertinoIcons.headphones,
-                          size: 18, color: AppPalette.textGrey),
-                    ),
-                    IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          size: 18,
-                          Icons.share_rounded,
-                          color: AppPalette.textGrey,
-                        )),
-                  ],
-                ),
-              ],
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Row(
+            //       children: [
+            //         IconButton(
+            //           onPressed: () {},
+            //           icon: Icon(CupertinoIcons.headphones,
+            //               size: 18, color: AppPalette.textGrey),
+            //         ),
+            //         IconButton(
+            //             onPressed: () {},
+            //             icon: Icon(
+            //               size: 18,
+            //               Icons.share_rounded,
+            //               color: AppPalette.textGrey,
+            //             )),
+            //       ],
+            //     ),
+            //   ],
+            // ),
 
             const Divider(
               color: AppPalette.textGrey,
@@ -134,6 +151,4 @@ class BlogDetailPage extends StatelessWidget {
           ],
         ));
   }
-
-
 }
