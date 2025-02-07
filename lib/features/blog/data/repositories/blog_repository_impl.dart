@@ -46,6 +46,56 @@ class BlogRepositoryImpl implements BlogRepository {
       return left(Failure(e.message));
     }
   }
+  // Add these new methods for likes functionality
+  @override
+  Future<Either<Failure, void>> likeBlog(String blogId, String userId) async {
+    try {
+      await blogRemoteDataSource.likeBlog(blogId, userId);
+      return right(null);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> unlikeBlog(String blogId, String userId) async {
+    try {
+      await blogRemoteDataSource.unlikeBlog(blogId, userId);
+      return right(null);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> isLikedByUser(String blogId, String userId) async {
+    try {
+      final isLiked = await blogRemoteDataSource.isLikedByUser(blogId, userId);
+      return right(isLiked);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Blog>> getBlogWithLikes(String blogId, String userId) async {
+    try {
+      final blog = await blogRemoteDataSource.getBlogById(blogId);
+      final isLiked = await blogRemoteDataSource.isLikedByUser(blogId, userId);
+      
+      return right(blog.copyWith(isLiked: isLiked));
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
 
   @override
   Future<Either<Failure, List<Blog>>> getAllBlogs() async {

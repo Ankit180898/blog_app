@@ -109,7 +109,7 @@ class BlogCard extends StatelessWidget {
                             width: 4,
                           ),
                           // Text(
-                          //   "2",
+                          //   blog.likesCount.toString(),
                           //   style: Theme.of(context)
                           //       .textTheme
                           //       .labelSmall
@@ -130,8 +130,7 @@ class BlogCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 10, top: 40.0),
                     child: Hero(
-                      tag:
-                      'blog-image-${blog.id}',
+                      tag: 'blog-image-${blog.id}',
                       child: CachedNetworkImage(
                         imageUrl: blog.imageUrl,
                         width: 80,

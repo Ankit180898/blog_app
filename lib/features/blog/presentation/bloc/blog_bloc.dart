@@ -7,7 +7,10 @@ import 'package:blog_app/features/blog/domain/usecases/edit_blog.dart';
 import 'package:blog_app/features/blog/domain/usecases/filter_blogs_by_category.dart';
 import 'package:blog_app/features/blog/domain/usecases/get_all_blogs.dart';
 import 'package:blog_app/features/blog/domain/usecases/get_user_blogs.dart';
+import 'package:blog_app/features/blog/domain/usecases/is_blog_liked_usecase.dart';
+import 'package:blog_app/features/blog/domain/usecases/like_blog_usecase.dart';
 import 'package:blog_app/features/blog/domain/usecases/search_blog_post.dart';
+import 'package:blog_app/features/blog/domain/usecases/unlike_blog_usecase.dart';
 import 'package:blog_app/features/blog/domain/usecases/upload_blog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,9 +25,9 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
   final EditBlog _editBlog;
   final DeleteUserBlog _deleteBlog; // Add this
   final GetUserBlogs _getUserBlogs;
-  final bool _isFetching = false;
-  final int _limit = 10;
-  Timer? _debounce;
+  final LikeBlog _likeBlog;
+  final UnlikeBlog _unlikeBlog;
+  final IsBlogLikedByUser _isBlogLikedByUser;
 
   BlogBloc({
     required UploadBlog uploadBlog,
@@ -34,6 +37,9 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     required EditBlog editBlog,
     required DeleteUserBlog deleteBlog,
     required GetUserBlogs getUserBlogs,
+    required LikeBlog likeBlog,
+    required UnlikeBlog unlikeBlog,
+    required IsBlogLikedByUser isBlogLikedByUser,
   })  : _uploadBlog = uploadBlog,
         _getAllBlogs = getAllBlogs,
         _searchBlogPosts = searchBlogPosts,
@@ -41,14 +47,21 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
         _editBlog = editBlog,
         _deleteBlog = deleteBlog,
         _getUserBlogs = getUserBlogs,
+        _likeBlog = likeBlog,
+        _unlikeBlog = unlikeBlog,
+        _isBlogLikedByUser = isBlogLikedByUser,
         super(BlogInitial()) {
     on<BlogUpload>(_onBlogUpload);
     on<BlogFetchAllBlogs>(_onGetAllBlogs);
     on<SearchBlogPostsEvent>(_onSearchBlogPosts);
     on<FilterBlogPostsByCategoryEvent>(_onFilterBlogPostsByCategory);
     on<EditBlogEvent>(_onEditBlog);
-    on<DeleteBlogEvent>(_onDeleteBlog); // Add this
-    on<FetchUserBlogsEvent>(_onFetchUserBlogs); // Add this
+    on<DeleteBlogEvent>(_onDeleteBlog);
+    on<FetchUserBlogsEvent>(_onFetchUserBlogs);
+    on<LikeBlogEvent>(_onLikeBlog);
+    on<UnlikeBlogEvent>(_onUnlikeBlog);
+    on<CheckIfBlogIsLikedEvent>(_onCheckIfBlogIsLiked);
+
   }
 
   void _onBlogUpload(BlogUpload event, Emitter<BlogState> emit) async {
@@ -130,6 +143,43 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     res.fold(
       (l) => emit(BlogFailure(l.message)),
       (r) => emit(BlogsDisplaySuccess(r)),
+    );
+  }
+
+    void _onLikeBlog(LikeBlogEvent event, Emitter<BlogState> emit) async {
+    emit(BlogLoading());
+    final result = await _likeBlog(LikeBlogParams(
+      blogId: event.blogId,
+      userId: event.userId,
+    ));
+    result.fold(
+      (failure) => emit(BlogFailure(failure.message)),
+      (_) => emit(BlogLikedState(blogId: event.blogId)),
+    );
+  }
+
+  void _onUnlikeBlog(UnlikeBlogEvent event, Emitter<BlogState> emit) async {
+    emit(BlogLoading());
+    final result = await _unlikeBlog(UnlikeBlogParams(
+      blogId: event.blogId,
+      userId: event.userId,
+    ));
+    result.fold(
+      (failure) => emit(BlogFailure(failure.message)),
+      (_) => emit(BlogUnlikedState(blogId: event.blogId)),
+    );
+  }
+
+  void _onCheckIfBlogIsLiked(
+      CheckIfBlogIsLikedEvent event, Emitter<BlogState> emit) async {
+    emit(BlogLoading());
+    final result = await _isBlogLikedByUser(LikeBlogParams(
+      blogId: event.blogId,
+      userId: event.userId,
+    ));
+    result.fold(
+      (failure) => emit(BlogFailure(failure.message)),
+      (isLiked) => emit(BlogIsLikedState(blogId: event.blogId, isLiked: isLiked)),
     );
   }
 }

@@ -23,3 +23,20 @@ final class BlogsDisplaySuccess extends BlogState {
 class BlogDeleteSuccess extends BlogState {}
 
 class BlogEditSuccess extends BlogState {}
+
+// New States
+final class BlogLikedState extends BlogState {
+  final String blogId;
+  BlogLikedState({required this.blogId});
+}
+
+final class BlogUnlikedState extends BlogState {
+  final String blogId;
+  BlogUnlikedState({required this.blogId});
+}
+
+final class BlogIsLikedState extends BlogState {
+  final String blogId;
+  final bool isLiked;
+  BlogIsLikedState({required this.blogId, required this.isLiked});
+} 

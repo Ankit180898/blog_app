@@ -1,17 +1,19 @@
 import 'dart:convert';
-
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
 
 class BlogModel extends Blog {
-  BlogModel(
-      {required super.id,
-      required super.posterId,
-      required super.title,
-      required super.content,
-      required super.imageUrl,
-      required super.topics,
-      required super.updatedAt,
-      super.posterName});
+  BlogModel({
+    required super.id,
+    required super.posterId,
+    required super.title,
+    required super.content,
+    required super.imageUrl,
+    required super.topics,
+    required super.updatedAt,
+    super.posterName,
+    super.likesCount = 0,
+    super.isLiked = false,
+  });
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -22,6 +24,7 @@ class BlogModel extends Blog {
       'image_url': imageUrl,
       'topics': topics,
       'updated_at': updatedAt.toIso8601String(),
+      'likes_count': likesCount,
     };
   }
 
@@ -37,6 +40,8 @@ class BlogModel extends Blog {
       updatedAt: map['updated_at'] == null
           ? DateTime.now()
           : DateTime.parse(map['updated_at'] as String),
+      likesCount: map['likes_count'] as int? ?? 0,
+      isLiked: map['is_liked'] as bool? ?? false,
     );
   }
 
@@ -49,6 +54,8 @@ class BlogModel extends Blog {
     List<String>? topics,
     DateTime? updatedAt,
     String? posterName,
+    int? likesCount,
+    bool? isLiked,
   }) {
     return BlogModel(
       id: id ?? this.id,
@@ -59,6 +66,8 @@ class BlogModel extends Blog {
       topics: topics ?? this.topics,
       updatedAt: updatedAt ?? this.updatedAt,
       posterName: posterName ?? this.posterName,
+      likesCount: likesCount ?? this.likesCount,
+      isLiked: isLiked ?? this.isLiked,
     );
   }
 

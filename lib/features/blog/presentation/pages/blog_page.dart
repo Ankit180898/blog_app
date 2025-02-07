@@ -157,6 +157,7 @@ class _BlogPageState extends State<BlogPage>
                                 child: BlogCard(
                                   key: ValueKey(blog.id), // Use a unique key
                                   blog: blog,
+                                  
                                 ),
                               );
                             },

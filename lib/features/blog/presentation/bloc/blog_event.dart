@@ -59,3 +59,35 @@ class EditBlogEvent extends BlogEvent {
   });
 }
 
+// New Events
+final class LikeBlogEvent extends BlogEvent {
+  final String blogId;
+  final String userId;
+
+  LikeBlogEvent({
+    required this.blogId,
+    required this.userId,
+  });
+}
+
+final class UnlikeBlogEvent extends BlogEvent {
+  final String blogId;
+  final String userId;
+
+  UnlikeBlogEvent({
+    required this.blogId,
+    required this.userId,
+  });
+}
+
+final class CheckIfBlogIsLikedEvent extends BlogEvent {
+  final String blogId;
+  final String userId;
+
+  CheckIfBlogIsLikedEvent({
+    required this.blogId,
+    required this.userId,
+  });
+}
+
+
