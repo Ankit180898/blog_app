@@ -108,15 +108,15 @@ class BlogCard extends StatelessWidget {
                           const SizedBox(
                             width: 4,
                           ),
-                          // Text(
-                          //   blog.likesCount.toString(),
-                          //   style: Theme.of(context)
-                          //       .textTheme
-                          //       .labelSmall
-                          //       ?.copyWith(
-                          //         color: AppPalette.focusedColor.withAlpha(120),
-                          //       ),
-                          // ),
+                          Text(
+                            blog.likesCount.toString(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: AppPalette.focusedColor.withAlpha(120),
+                                ),
+                          ),
                           Spacer(),
                           IconButton(
                               onPressed: () {},

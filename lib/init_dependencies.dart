@@ -18,7 +18,10 @@ import 'package:blog_app/features/blog/domain/usecases/edit_blog.dart';
 import 'package:blog_app/features/blog/domain/usecases/filter_blogs_by_category.dart';
 import 'package:blog_app/features/blog/domain/usecases/get_all_blogs.dart';
 import 'package:blog_app/features/blog/domain/usecases/get_user_blogs.dart';
+import 'package:blog_app/features/blog/domain/usecases/is_blog_liked_usecase.dart';
+import 'package:blog_app/features/blog/domain/usecases/like_blog_usecase.dart';
 import 'package:blog_app/features/blog/domain/usecases/search_blog_post.dart';
+import 'package:blog_app/features/blog/domain/usecases/unlike_blog_usecase.dart';
 import 'package:blog_app/features/blog/domain/usecases/upload_blog.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -169,6 +172,21 @@ void _initBlog() {
         serviceLocator(),
       ),
     )
+     ..registerFactory(
+      () => LikeBlog(
+        serviceLocator(),
+      ),
+    )
+     ..registerFactory(
+      () => UnlikeBlog(
+        serviceLocator(),
+      ),
+    )
+     ..registerFactory(
+      () => IsBlogLikedByUser(
+        serviceLocator(),
+      ),
+    )
 
     // Bloc
     ..registerLazySingleton(
@@ -180,6 +198,9 @@ void _initBlog() {
         editBlog: serviceLocator(),
         deleteBlog: serviceLocator(),
         getUserBlogs: serviceLocator(),
+        likeBlog: serviceLocator(),
+        unlikeBlog: serviceLocator(),
+        isBlogLikedByUser: serviceLocator(),
       ),
     );
 }
