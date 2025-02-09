@@ -17,8 +17,8 @@ final class BlogUploadSuccess extends BlogState {}
 final class BlogsDisplaySuccess extends BlogState {
   final List<Blog> blogs;
   BlogsDisplaySuccess(this.blogs);
-
 }
+
 // States
 class BlogDeleteSuccess extends BlogState {}
 
@@ -26,27 +26,19 @@ class BlogEditSuccess extends BlogState {}
 
 // New States
 class BlogLikedState extends BlogState {
-  final List<Blog> blogs;
   final String blogId;
 
-   BlogLikedState({required this.blogs, required this.blogId});
-
-  @override
-  List<Object> get props => [blogs, blogId];
+  BlogLikedState({required this.blogId});
 }
 
 class BlogUnlikedState extends BlogState {
-  final List<Blog> blogs;
   final String blogId;
 
-   BlogUnlikedState({required this.blogs, required this.blogId});
-
-  @override
-  List<Object> get props => [blogs, blogId];
+  BlogUnlikedState({required this.blogId});
 }
 
 final class BlogIsLikedState extends BlogState {
   final String blogId;
   final bool isLiked;
   BlogIsLikedState({required this.blogId, required this.isLiked});
-} 
+}
