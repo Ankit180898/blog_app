@@ -18,6 +18,6 @@ class UnlikeBlog implements UseCase<void, UnlikeBlogParams> {
   
   @override
   Future<Either<Failure, void>> call(UnlikeBlogParams params) async {
-    return await blogRepository.likeBlog(params.blogId, params.userId);
+    return await blogRepository.unlikeBlog(params.blogId, params.userId);
   }
 }

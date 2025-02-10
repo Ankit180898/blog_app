@@ -25,16 +25,14 @@ class BlogDeleteSuccess extends BlogState {}
 class BlogEditSuccess extends BlogState {}
 
 // New States
-class BlogLikedState extends BlogState {
+final class BlogLikedState extends BlogState {
   final String blogId;
-
   BlogLikedState({required this.blogId});
 }
 
-class BlogUnlikedState extends BlogState {
+final class BlogUnlikeState extends BlogState {
   final String blogId;
-
-  BlogUnlikedState({required this.blogId});
+  BlogUnlikeState({required this.blogId});
 }
 
 final class BlogIsLikedState extends BlogState {

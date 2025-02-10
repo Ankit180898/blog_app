@@ -166,7 +166,7 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     ));
     result.fold(
       (failure) => emit(BlogFailure(failure.message)),
-      (_) => emit(BlogUnlikedState(blogId: event.blogId)),
+      (_) => emit(BlogUnlikeState(blogId: event.blogId)),
     );
   }
 
