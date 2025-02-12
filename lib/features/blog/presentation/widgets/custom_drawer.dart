@@ -69,16 +69,16 @@ class CustomDrawer extends StatelessWidget {
           //   // Navigate to subscriptions page (if you have one)
           //   Navigator.pop(context);
           // }),
-          _buildDrawerItem(Icons.settings, "Settings", () {
-            Navigator.pop(context);
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BottomNavBar(
-                    index: 3), // Navigate to BottomNavBar with index 1
-              ),
-            );
-          }),
+          // _buildDrawerItem(Icons.settings, "Settings", () {
+          //   Navigator.pop(context);
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => BottomNavBar(
+          //           index: 3), // Navigate to BottomNavBar with index 1
+          //     ),
+          //   );
+          // }),
           // _buildDrawerItem(Icons.logout, "Log out", () {
           //   _logout(context);
           // }),
