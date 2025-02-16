@@ -10,7 +10,8 @@ abstract interface class BlogRemoteDataSource {
     required BlogModel blog,
     required File image,
   });
-  Future<List<BlogModel>> getAllBlogs();
+  Future<List<BlogModel>> getAllBlogs(
+      {int page = 1, int limit = 10}); // Add pagination parameters
   Future<List<BlogModel>> searchBlogPosts(String query);
   Future<List<BlogModel>> filterBlogPostsByCategory(String category);
   Future<List<BlogModel>> getBlogsByUser(String userId);
@@ -64,7 +65,7 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
   Future<void> likeBlog(String blogId, String userId) async {
     try {
       // First, insert the like record
-      await supabaseClient.from('blog_likes').insert({
+      await supabaseClient.from('blog_likes').upsert({
         'blog_id': blogId,
         'user_id': userId,
       });
@@ -110,8 +111,9 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
       final response = await supabaseClient
           .from('blog_likes')
           .select()
-          .match({'blog_id': blogId, 'user_id': userId});
-      return response.isNotEmpty;
+          .match({'blog_id': blogId, 'user_id': userId}).maybeSingle();
+
+      return response != null; // Returns true if the entry exists
     } on PostgrestException catch (e) {
       throw ServerExceptions(e.message);
     } catch (e) {
@@ -121,11 +123,13 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
 
   // Modify your existing getAllBlogs method to include likes information
   @override
-  Future<List<BlogModel>> getAllBlogs() async {
+  Future<List<BlogModel>> getAllBlogs({int page = 1, int limit = 10}) async {
     try {
       final blogs = await supabaseClient
           .from('blogs')
-          .select('*, profiles (name), likes_count');
+          .select('*, profiles (name), likes_count')
+          .order('updated_at', ascending: false)
+          .range((page - 1) * limit, page * limit - 1); // Pagination logic
 
       return blogs
           .map(
@@ -231,41 +235,45 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
         .from('blogs')
         .delete()
         .eq('id', blogId); // Delete blog by ID
+    await supabaseClient.storage.from('blog_images').remove([blogId]);
   }
 
   @override
   Future<void> editBlog({
     required BlogModel blog,
-    File? image, // Make the image parameter optional
+    File? image, // Optional new image
   }) async {
     try {
-      // If a new image is provided, upload it and update the blog's image URL
-      if (image != null) {
-        // Delete the existing image from storage
-        await supabaseClient.storage.from('blog_images').remove([blog.id]);
+      String? imageUrl;
 
-        // Upload the new image to Supabase Storage
+      if (image != null) {
+        // Upload the new image first (to avoid losing the old one if upload fails)
         await supabaseClient.storage
             .from('blog_images')
             .upload(blog.id, image, fileOptions: FileOptions(upsert: true));
 
-        // Get the public URL of the uploaded image
-        final imageUrl =
+        // Get the new image's public URL
+        imageUrl =
             supabaseClient.storage.from('blog_images').getPublicUrl(blog.id);
 
-        // Update the blog's image URL in the database
-        await supabaseClient
-            .from('blogs')
-            .update({'imageUrl': imageUrl}).eq('id', blog.id);
+        // Delete the old image (only after successful upload)
+        await supabaseClient.storage.from('blog_images').remove([blog.id]);
       }
 
-      // Update the blog content in the database
-      await supabaseClient.from('blogs').update({
+      // Update blog content and image URL in a single query
+      final updateData = {
         'title': blog.title,
         'content': blog.content,
         'topics': blog.topics,
         'updated_at': blog.updatedAt.toIso8601String(),
-      }).eq('id', blog.id);
+      };
+
+      if (imageUrl != null) {
+        updateData['image_url'] =
+            imageUrl; // Only update if a new image was uploaded
+      }
+
+      await supabaseClient.from('blogs').update(updateData).eq('id', blog.id);
     } on StorageException catch (e) {
       throw ServerExceptions(e.message);
     } on PostgrestException catch (e) {

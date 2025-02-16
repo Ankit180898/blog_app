@@ -24,9 +24,6 @@ class CustomDrawer extends StatelessWidget {
           BlocBuilder<AppUserCubit, AppUserState>(
             builder: (context, state) {
               if (state is AppUserLoggedIn) {
-                print(
-                    'User data: ${state.user.name}, ${state.user.email}'); // Debug print
-
                 return _buildUserProfile(state.user);
               } else {
                 return _buildGuestHeader();

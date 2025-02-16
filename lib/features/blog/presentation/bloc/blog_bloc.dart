@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:blog_app/core/usecase/usecase.dart';
+import 'package:blog_app/features/blog/data/models/blog_model.dart';
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
 import 'package:blog_app/features/blog/domain/usecases/delete_user_blog.dart';
 import 'package:blog_app/features/blog/domain/usecases/edit_blog.dart';
@@ -27,6 +28,10 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
   final LikeBlog _likeBlog;
   final UnlikeBlog _unlikeBlog;
   final IsBlogLikedByUser _isBlogLikedByUser;
+  static const int _pageLimit = 10;
+  List<Blog> _allBlogs = [];
+  bool _hasReachedEnd = false;
+  int _currentPage = 1;
 
   BlogBloc({
     required UploadBlog uploadBlog,
@@ -60,7 +65,6 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     on<LikeBlogEvent>(_onLikeBlog);
     on<UnlikeBlogEvent>(_onUnlikeBlog);
     on<CheckIfBlogIsLikedEvent>(_onCheckIfBlogIsLiked);
-
   }
 
   void _onBlogUpload(BlogUpload event, Emitter<BlogState> emit) async {
@@ -80,12 +84,24 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
   }
 
   void _onGetAllBlogs(BlogFetchAllBlogs event, Emitter<BlogState> emit) async {
-    emit(BlogLoading()); // Add loading state here
+    emit(BlogLoading());
+    _currentPage = 1;
+    _hasReachedEnd = false;
 
-    final res = await _getAllBlogs(NoParams());
+    final res =
+        await _getAllBlogs(PageParams(page: _currentPage, limit: _pageLimit));
+
     res.fold(
-      (l) => emit(BlogFailure(l.message)),
-      (r) => emit(BlogsDisplaySuccess(r)),
+      (failure) => emit(BlogFailure(failure.message)),
+      (blogs) {
+        _allBlogs = blogs;
+        _hasReachedEnd = blogs.length < _pageLimit;
+        emit(BlogsDisplaySuccess(
+          blogs: _allBlogs,
+          hasReachedEnd: _hasReachedEnd,
+          currentPage: _currentPage,
+        ));
+      },
     );
   }
 
@@ -96,7 +112,11 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     final res = await _searchBlogPosts(event.query);
     res.fold(
       (l) => emit(BlogFailure(l.message)),
-      (r) => emit(BlogsDisplaySuccess(r)),
+      (r) => emit(BlogsDisplaySuccess(
+        blogs: r, // Pass the fetched blogs
+        hasReachedEnd: false, // Reset pagination state
+        currentPage: 1, // Reset pagination state
+      )),
     );
   }
 
@@ -107,7 +127,11 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     final res = await _filterBlogPostsByCategory(event.category);
     res.fold(
       (l) => emit(BlogFailure(l.message)),
-      (r) => emit(BlogsDisplaySuccess(r)),
+      (r) => emit(BlogsDisplaySuccess(
+        blogs: r, // Pass the fetched blogs
+        hasReachedEnd: false, // Reset pagination state
+        currentPage: 1, // Reset pagination state
+      )),
     );
   }
 
@@ -141,44 +165,95 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     final res = await _getUserBlogs(event.userId);
     res.fold(
       (l) => emit(BlogFailure(l.message)),
-      (r) => emit(BlogsDisplaySuccess(r)),
+      (r) => emit(BlogsDisplaySuccess(
+        blogs: r, // Pass the fetched blogs
+        hasReachedEnd: false, // Reset pagination state
+        currentPage: 1, // Reset pagination state
+      )),
     );
   }
 
-    void _onLikeBlog(LikeBlogEvent event, Emitter<BlogState> emit) async {
-    emit(BlogLoading());
-    final result = await _likeBlog(LikeBlogParams(
-      blogId: event.blogId,
-      userId: event.userId,
-    ));
-    result.fold(
-      (failure) => emit(BlogFailure(failure.message)),
-      (_) => emit(BlogLikedState(blogId: event.blogId)),
-    );
+  void _onLikeBlog(LikeBlogEvent event, Emitter<BlogState> emit) async {
+    final currentState = state;
+
+    if (currentState is BlogsDisplaySuccess) {
+      // Create a new list with the updated blog
+      final updatedBlogs = currentState.blogs.map((blog) {
+        if (blog.id == event.blogId) {
+          return (blog as BlogModel).copyWith(
+            isLiked: true,
+            likesCount: blog.likesCount + 1, // Increment like count
+          );
+        }
+        return blog;
+      }).toList();
+
+      // Emit the new state with the updated list of blogs
+      emit(currentState.copyWith(blogs: updatedBlogs));
+
+      // Call the likeBlog use case
+      final result = await _likeBlog(LikeBlogParams(
+        blogId: event.blogId,
+        userId: event.userId,
+      ));
+
+      result.fold(
+        (failure) {
+          // Revert the state if the like action fails
+          emit(currentState.copyWith(blogs: currentState.blogs));
+          emit(BlogFailure(failure.message));
+        },
+        (_) => null, // No need to emit a new state here
+      );
+    }
   }
 
   void _onUnlikeBlog(UnlikeBlogEvent event, Emitter<BlogState> emit) async {
-    emit(BlogLoading());
-    final result = await _unlikeBlog(UnlikeBlogParams(
-      blogId: event.blogId,
-      userId: event.userId,
-    ));
-    result.fold(
-      (failure) => emit(BlogFailure(failure.message)),
-      (_) => emit(BlogUnlikeState(blogId: event.blogId)),
-    );
+    final currentState = state;
+
+    if (currentState is BlogsDisplaySuccess) {
+      // Create a new list with the updated blog
+      final updatedBlogs = currentState.blogs.map((blog) {
+        if (blog.id == event.blogId) {
+          return (blog as BlogModel).copyWith(
+            isLiked: false,
+            likesCount: blog.likesCount - 1, // Decrement like count
+          );
+        }
+        return blog;
+      }).toList();
+
+      // Emit the new state with the updated list of blogs
+      emit(currentState.copyWith(blogs: updatedBlogs));
+
+      // Call the unlikeBlog use case
+      final result = await _unlikeBlog(UnlikeBlogParams(
+        blogId: event.blogId,
+        userId: event.userId,
+      ));
+
+      result.fold(
+        (failure) {
+          // Revert the state if the unlike action fails
+          emit(currentState.copyWith(blogs: currentState.blogs));
+          emit(BlogFailure(failure.message));
+        },
+        (_) => null, // No need to emit a new state here
+      );
+    }
   }
 
   void _onCheckIfBlogIsLiked(
       CheckIfBlogIsLikedEvent event, Emitter<BlogState> emit) async {
-    emit(BlogLoading());
     final result = await _isBlogLikedByUser(LikeBlogParams(
       blogId: event.blogId,
       userId: event.userId,
     ));
+
     result.fold(
       (failure) => emit(BlogFailure(failure.message)),
-      (isLiked) => emit(BlogIsLikedState(blogId: event.blogId, isLiked: isLiked)),
+      (isLiked) =>
+          emit(BlogIsLikedState(blogId: event.blogId, isLiked: isLiked)),
     );
   }
 }

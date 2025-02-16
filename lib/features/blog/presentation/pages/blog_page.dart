@@ -1,3 +1,4 @@
+import 'package:blog_app/core/common/cubits/app_user/app_user_cubit.dart';
 import 'package:blog_app/core/common/widgets/loader.dart';
 import 'package:blog_app/core/constants/constants.dart';
 import 'package:blog_app/core/theme/app_palette.dart';
@@ -12,6 +13,7 @@ import 'package:lottie/lottie.dart';
 
 class BlogPage extends StatefulWidget {
   static route() => MaterialPageRoute(builder: (context) => const BlogPage());
+
   const BlogPage({super.key});
 
   @override
@@ -21,32 +23,54 @@ class BlogPage extends StatefulWidget {
 class _BlogPageState extends State<BlogPage>
     with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  bool _isFetching = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     context.read<BlogBloc>().add(BlogFetchAllBlogs());
+  }
+
+  void _onScroll() {
+    final state = context.read<BlogBloc>().state;
+    if (state is BlogsDisplaySuccess &&
+        !state.hasReachedEnd &&
+        !_isFetching &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 100) {
+      _isFetching = true;
+      context.read<BlogBloc>().add(FetchBlogsPaginatedEvent());
+    }
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  void _handleCategorySelection(String selectedValue, Function fetchAllBlogs,
-      Function filterBlogsByCategory) {
+  void _handleCategorySelection(String selectedValue) {
     if (selectedValue == 'All') {
-      fetchAllBlogs();
+      context.read<BlogBloc>().add(BlogFetchAllBlogs());
     } else {
-      filterBlogsByCategory(selectedValue);
+      context
+          .read<BlogBloc>()
+          .add(FilterBlogPostsByCategoryEvent(selectedValue));
     }
   }
 
-  void _showFilterMenu(BuildContext context) async {
+  Future<void> _showFilterMenu(BuildContext context) async {
     final selectedValue = await showMenu<String>(
       context: context,
-      position: const RelativeRect.fromLTRB(100, 100, 0, 0),
+      position: RelativeRect.fromLTRB(
+        MediaQuery.of(context).size.width - 150,
+        kToolbarHeight + 10,
+        0,
+        0,
+      ),
       items: Constants.topics.map((String category) {
         return PopupMenuItem<String>(
           value: category,
@@ -61,13 +85,7 @@ class _BlogPageState extends State<BlogPage>
     );
 
     if (selectedValue != null) {
-      _handleCategorySelection(
-        selectedValue,
-        () => context.read<BlogBloc>().add(BlogFetchAllBlogs()),
-        (category) => context
-            .read<BlogBloc>()
-            .add(FilterBlogPostsByCategoryEvent(category)),
-      );
+      _handleCategorySelection(selectedValue);
     }
   }
 
@@ -91,7 +109,7 @@ class _BlogPageState extends State<BlogPage>
       ),
       drawer: const CustomDrawer(),
       body: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         child: Column(
           children: [
             // Search Bar
@@ -100,7 +118,6 @@ class _BlogPageState extends State<BlogPage>
                 Expanded(
                   child: CupertinoSearchTextField(
                     controller: _searchController,
-                    autofocus: false,
                     onChanged: (value) {
                       if (value.isEmpty) {
                         context.read<BlogBloc>().add(BlogFetchAllBlogs());
@@ -121,58 +138,82 @@ class _BlogPageState extends State<BlogPage>
             const SizedBox(height: 16),
 
             // Blog List
-            BlocBuilder<BlogBloc, BlogState>(
-              buildWhen: (previous, current) =>
-                  previous != current, // Only rebuild when state changes
+            Expanded(
+              child: BlocBuilder<BlogBloc, BlogState>(
+                buildWhen: (previous, current) =>
+                    current is BlogsDisplaySuccess ||
+                    current is BlogLikedState ||
+                    current is BlogUnlikeState ||
+                    current is BlogLoading,
+                builder: (context, state) {
+                  if (state is BlogLoading) {
+                    return const Center(child: Loader());
+                  }
 
-              builder: (context, state) {
-                if (state is BlogLoading) {
-                  return const Loader();
-                }
-                if (state is BlogsDisplaySuccess) {
-                  return state.blogs.isEmpty
-                      ? Center(
-                          child: DotLottieLoader.fromAsset(
+                  if (state is BlogsDisplaySuccess) {
+                    _isFetching = false;
+
+                    /// Get the current user ID from AppUserCubit
+                    final currentUserId =
+                        context.read<AppUserCubit>().state is AppUserLoggedIn
+                            ? (context.read<AppUserCubit>().state
+                                    as AppUserLoggedIn)
+                                .user
+                                .id
+                            : '';
+
+                    return state.blogs.isEmpty
+                        ? Center(
+                            child: DotLottieLoader.fromAsset(
                               "assets/images/empty_state.lottie",
                               frameBuilder: (ctx, dotlottie) {
-                            if (dotlottie != null) {
-                              return Lottie.memory(
-                                  dotlottie.animations.values.single);
-                            } else {
-                              return Container();
-                            }
-                          }),
-                        )
-                      : Expanded(
-                          child: ListView.separated(
-                            shrinkWrap: true,
-                            cacheExtent: 500, // Preload content to reduce lag
-
-                            padding: EdgeInsets.zero,
+                                return dotlottie != null
+                                    ? Lottie.memory(
+                                        dotlottie.animations.values.single)
+                                    : const CircularProgressIndicator();
+                              },
+                            ),
+                          )
+                        : ListView.separated(
+                            controller: _scrollController,
                             itemCount: state.blogs.length,
                             itemBuilder: (context, index) {
                               final blog = state.blogs[index];
                               return Padding(
                                 padding: const EdgeInsets.only(top: 12.0),
                                 child: BlogCard(
-                                  key: ValueKey(blog.id), // Use a unique key
+                                  key: ValueKey(blog
+                                      .id), // Use a unique key for each blog
                                   blog: blog,
-                                  
+                                  onLike: () {
+                                    context.read<BlogBloc>().add(LikeBlogEvent(
+                                          blogId: blog.id,
+                                          userId:
+                                              currentUserId, // Pass the current user ID
+                                        ));
+                                  },
+                                  onUnlike: () {
+                                    context
+                                        .read<BlogBloc>()
+                                        .add(UnlikeBlogEvent(
+                                          blogId: blog.id,
+                                          userId:
+                                              currentUserId, // Pass the current user ID
+                                        ));
+                                  },
+                                  isLiked: blog.isLiked,
                                 ),
                               );
                             },
-                            separatorBuilder:
-                                (BuildContext context, int index) {
-                              return Divider(
-                                color: AppPalette.textGrey,
-                                thickness: 0.5,
-                              );
-                            },
-                          ),
-                        );
-                }
-                return const SizedBox();
-              },
+                            separatorBuilder: (_, __) => Divider(
+                              color: AppPalette.textGrey,
+                              thickness: 0.5,
+                            ),
+                          );
+                  }
+                  return const SizedBox();
+                },
+              ),
             ),
           ],
         ),

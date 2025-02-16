@@ -89,5 +89,11 @@ final class CheckIfBlogIsLikedEvent extends BlogEvent {
     required this.userId,
   });
 }
+class FetchBlogsPaginatedEvent extends BlogEvent {
+   FetchBlogsPaginatedEvent();
+
+  @override
+  List<Object> get props => [];
+}
 
 

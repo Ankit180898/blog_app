@@ -14,10 +14,31 @@ final class BlogFailure extends BlogState {
 
 final class BlogUploadSuccess extends BlogState {}
 
+// Modified to include pagination info
 final class BlogsDisplaySuccess extends BlogState {
   final List<Blog> blogs;
-  BlogsDisplaySuccess(this.blogs);
+  final bool hasReachedEnd;
+  final int currentPage;
+
+  BlogsDisplaySuccess({
+    required this.blogs,
+    this.hasReachedEnd = false,
+    this.currentPage = 1,
+  });
+
+  BlogsDisplaySuccess copyWith({
+    List<Blog>? blogs,
+    bool? hasReachedEnd,
+    int? currentPage,
+  }) {
+    return BlogsDisplaySuccess(
+      blogs: blogs ?? this.blogs,
+      hasReachedEnd: hasReachedEnd ?? this.hasReachedEnd,
+      currentPage: currentPage ?? this.currentPage,
+    );
+  }
 }
+
 
 // States
 class BlogDeleteSuccess extends BlogState {}

@@ -12,7 +12,7 @@ abstract interface class BlogRepository {
     required List<String> topics,
     required String posterId,
   });
-  Future<Either<Failure, List<Blog>>> getAllBlogs();
+  Future<Either<Failure, List<Blog>>> getAllBlogs(int page, int limit); // Add pagination parameters
   Future<Either<Failure, List<Blog>>> filterBlogPostsByCategory(
       String category);
   Future<Either<Failure, List<Blog>>> searchBlogPosts(String query);
