@@ -29,8 +29,8 @@ class _BlogPageState extends State<BlogPage>
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     context.read<BlogBloc>().add(BlogFetchAllBlogs());
+    _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {

@@ -129,8 +129,7 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
           .from('blogs')
           .select('*, profiles (name), likes_count')
           .order('updated_at', ascending: false)
-          .range((page - 1) * limit, page * limit - 1); // Pagination logic
-
+          .range((page - 1) * limit, page * limit - 1);
       return blogs
           .map(
             (blog) => BlogModel.fromMap(blog).copyWith(
