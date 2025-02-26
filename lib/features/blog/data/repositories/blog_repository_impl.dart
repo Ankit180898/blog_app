@@ -46,6 +46,7 @@ class BlogRepositoryImpl implements BlogRepository {
       return left(Failure(e.message));
     }
   }
+
   // Add these new methods for likes functionality
   @override
   Future<Either<Failure, void>> likeBlog(String blogId, String userId) async {
@@ -55,7 +56,7 @@ class BlogRepositoryImpl implements BlogRepository {
     } on ServerExceptions catch (e) {
       return left(Failure(e.message));
     } catch (e) {
-      return left(Failure(e.toString()));
+      return left(Failure('Failed to like blog: $e'));
     }
   }
 
@@ -67,28 +68,30 @@ class BlogRepositoryImpl implements BlogRepository {
     } on ServerExceptions catch (e) {
       return left(Failure(e.message));
     } catch (e) {
-      return left(Failure(e.toString()));
+      return left(Failure('Failed to unlike blog: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, bool>> isLikedByUser(String blogId, String userId) async {
+  Future<Either<Failure, bool>> isLikedByUser(
+      String blogId, String userId) async {
     try {
       final isLiked = await blogRemoteDataSource.isLikedByUser(blogId, userId);
       return right(isLiked);
     } on ServerExceptions catch (e) {
       return left(Failure(e.message));
     } catch (e) {
-      return left(Failure(e.toString()));
+      return left(Failure('Failed to check if blog is liked: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, Blog>> getBlogWithLikes(String blogId, String userId) async {
+  Future<Either<Failure, Blog>> getBlogWithLikes(
+      String blogId, String userId) async {
     try {
       final blog = await blogRemoteDataSource.getBlogById(blogId);
       final isLiked = await blogRemoteDataSource.isLikedByUser(blogId, userId);
-      
+
       return right(blog.copyWith(isLiked: isLiked));
     } on ServerExceptions catch (e) {
       return left(Failure(e.message));
@@ -100,7 +103,8 @@ class BlogRepositoryImpl implements BlogRepository {
   @override
   Future<Either<Failure, List<Blog>>> getAllBlogs(int page, int limit) async {
     try {
-      final blogs = await blogRemoteDataSource.getAllBlogs(page: page, limit: limit);
+      final blogs =
+          await blogRemoteDataSource.getAllBlogs(page: page, limit: limit);
       return Right(blogs);
     } on ServerExceptions catch (e) {
       return Left(Failure(e.message));
@@ -158,53 +162,53 @@ class BlogRepositoryImpl implements BlogRepository {
       return left(Failure('An unexpected error occurred: $e'));
     }
   }
-  
-@override
-Future<Either<Failure, Blog>> editBlog({
-  required String id,
-  required String title,
-  required File? image, // Make the image parameter optional
-  required String content,
-  required List<String> topics,
-}) async {
-  try {
-    // Fetch the existing blog to get the current image URL
-    final existingBlog = await blogRemoteDataSource.getBlogById(id);
 
-    // If no new image is provided, use the existing image URL
-    String imageUrl = existingBlog.imageUrl;
+  @override
+  Future<Either<Failure, Blog>> editBlog({
+    required String id,
+    required String title,
+    required File? image,
+    required String content,
+    required List<String> topics,
+  }) async {
+    try {
+      // Fetch the existing blog to get the current image URL
+      final existingBlog = await blogRemoteDataSource.getBlogById(id);
 
-    // If a new image is provided, upload it and update the image URL
-    if (image != null) {
-      imageUrl = await blogRemoteDataSource.uploadBlogImage(
-        blog: existingBlog,
+      // If no new image is provided, use the existing image URL
+      String imageUrl = existingBlog.imageUrl;
+
+      // If a new image is provided, upload it and update the image URL
+      if (image != null) {
+        imageUrl = await blogRemoteDataSource.uploadBlogImage(
+          blog: existingBlog,
+          image: image,
+        );
+      }
+
+      // Create the updated blog model
+      final updatedBlogModel = BlogModel(
+        id: existingBlog.id,
+        posterId: existingBlog.posterId,
+        title: title,
+        content: content,
+        imageUrl: imageUrl,
+        topics: topics,
+        updatedAt: DateTime.now(),
+      );
+
+      // Update the blog in the database
+      await blogRemoteDataSource.editBlog(
+        blog: updatedBlogModel,
         image: image,
       );
+
+      // Return the updated blog
+      return right(updatedBlogModel);
+    } on ServerExceptions catch (e) {
+      return left(Failure(e.message));
+    } catch (e) {
+      return left(Failure('An unexpected error occurred: $e'));
     }
-
-    // Create the updated blog model
-    final updatedBlogModel = BlogModel(
-      id: existingBlog.id,
-      posterId: '',
-      title: title,
-      content: content,
-      imageUrl: imageUrl,
-      topics: topics,
-      updatedAt: DateTime.now(),
-    );
-
-    // Update the blog in the database
-    await blogRemoteDataSource.editBlog(
-      blog: updatedBlogModel,
-      image: image,
-    );
-
-    // Return the updated blog
-    return right(updatedBlogModel);
-  } on ServerExceptions catch (e) {
-    return left(Failure(e.message));
-  } catch (e) {
-    return left(Failure('An unexpected error occurred: $e'));
   }
-}
 }

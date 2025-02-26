@@ -77,14 +77,15 @@ class _EditUserBlogPageState extends State<EditUserBlogPage> {
   }
 
   void updateBlog() {
+    if (!mounted) return; // Check if the widget is still mounted
+
     if (formKey.currentState!.validate() && selectedTopics.isNotEmpty) {
       final posterId =
           (context.read<AppUserCubit>().state as AppUserLoggedIn).user.id;
       context.read<BlogBloc>().add(
             EditBlogEvent(
               id: widget.blogId,
-              title: titleController.text
-                  .trim(), // Pass the existing image URL (if no new image)
+              title: titleController.text.trim(),
               posterId: posterId,
               content: contentController.text.trim(),
               topics: selectedTopics,
@@ -92,8 +93,10 @@ class _EditUserBlogPageState extends State<EditUserBlogPage> {
             ),
           );
     } else {
-      showSnackbar(
-          context, 'Please fill all fields and select at least one topic.');
+      if (mounted) {
+        showSnackbar(
+            context, 'Please fill all fields and select at least one topic.');
+      }
     }
   }
 
@@ -118,6 +121,14 @@ class _EditUserBlogPageState extends State<EditUserBlogPage> {
         listener: (context, state) {
           if (state is BlogFailure) {
             showSnackbar(context, state.error);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BottomNavBar(
+                    index: 2), // Navigate to BottomNavBar with index 1
+              ),
+              (route) => false,
+            );
           } else if (state is BlogEditSuccess) {
             Navigator.pushAndRemoveUntil(
               context,

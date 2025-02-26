@@ -177,18 +177,17 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     final currentState = state;
 
     if (currentState is BlogsDisplaySuccess) {
-      // Create a new list with the updated blog
+      // Update the blog's like count and isLiked status
       final updatedBlogs = currentState.blogs.map((blog) {
         if (blog.id == event.blogId) {
           return (blog as BlogModel).copyWith(
             isLiked: true,
-            likesCount: blog.likesCount + 1, // Increment like count
+            likesCount: blog.likesCount + 1,
           );
         }
         return blog;
       }).toList();
 
-      // Emit the new state with the updated list of blogs
       emit(currentState.copyWith(blogs: updatedBlogs));
 
       // Call the likeBlog use case
@@ -212,18 +211,17 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     final currentState = state;
 
     if (currentState is BlogsDisplaySuccess) {
-      // Create a new list with the updated blog
+      // Update the blog's like count and isLiked status
       final updatedBlogs = currentState.blogs.map((blog) {
         if (blog.id == event.blogId) {
           return (blog as BlogModel).copyWith(
             isLiked: false,
-            likesCount: blog.likesCount - 1, // Decrement like count
+            likesCount: blog.likesCount - 1,
           );
         }
         return blog;
       }).toList();
 
-      // Emit the new state with the updated list of blogs
       emit(currentState.copyWith(blogs: updatedBlogs));
 
       // Call the unlikeBlog use case

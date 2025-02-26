@@ -16,11 +16,13 @@ class BlogCard extends StatefulWidget {
   final VoidCallback onLike;
   final VoidCallback onUnlike;
   final bool isLiked;
-  const BlogCard({super.key,
+  const BlogCard({
+    super.key,
     required this.blog,
     required this.onLike,
     required this.onUnlike,
-    required this.isLiked,});
+    required this.isLiked,
+  });
 
   @override
   State<BlogCard> createState() => _BlogCardState();
@@ -43,18 +45,21 @@ class _BlogCardState extends State<BlogCard> {
     });
   }
 
-  void _onLikePressed(bool isLiked) {
+  bool _isProcessing = false;
+  
+  void _onLikePressed(bool isLiked) async {
     final appUserState = context.read<AppUserCubit>().state;
     if (appUserState is AppUserLoggedIn) {
       final userId = appUserState.user.id;
       context.read<BlogBloc>().add(
-        isLiked
-            ? UnlikeBlogEvent(blogId: widget.blog.id, userId: userId)
-            : LikeBlogEvent(blogId: widget.blog.id, userId: userId),
-      );
+            isLiked
+                ? UnlikeBlogEvent(blogId: widget.blog.id, userId: userId)
+                : LikeBlogEvent(blogId: widget.blog.id, userId: userId),
+          );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please log in to like or unlike the blog.")),
+        const SnackBar(
+            content: Text("Please log in to like or unlike the blog.")),
       );
     }
   }
@@ -132,34 +137,46 @@ class _BlogCardState extends State<BlogCard> {
                       const SizedBox(width: 12),
                       BlocBuilder<BlogBloc, BlogState>(
                         builder: (context, state) {
-                          bool isLiked = widget.blog.isLiked;
+                          bool isLiked =
+                              widget.isLiked; // Use `widget.isLiked` here.
                           int likeCount = widget.blog.likesCount;
 
-                          if (state is BlogIsLikedState && state.blogId == widget.blog.id) {
-                            isLiked = state.isLiked;
-                          } else if (state is BlogLikedState && state.blogId == widget.blog.id) {
+                          // Update the local UI based on the bloc state
+                          if (state is BlogLikedState &&
+                              state.blogId == widget.blog.id) {
                             isLiked = true;
                             likeCount++;
-                          } else if (state is BlogUnlikeState && state.blogId == widget.blog.id) {
+                          } else if (state is BlogUnlikeState &&
+                              state.blogId == widget.blog.id) {
                             isLiked = false;
                             likeCount--;
                           }
-
                           return Row(
                             children: [
                               GestureDetector(
-                                onTap: () => _onLikePressed(isLiked),
+                                onTap: () {
+                                  _onLikePressed(
+                                      isLiked); // Trigger like/unlike
+                                },
                                 child: Icon(
-                                  isLiked ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-                                  color: isLiked ? Colors.red : AppPalette.focusedColor,
+                                  isLiked
+                                      ? CupertinoIcons.heart_fill
+                                      : CupertinoIcons.heart,
+                                  color: isLiked
+                                      ? Colors.red
+                                      : AppPalette.focusedColor,
                                   size: 20,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 likeCount.toString(),
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: AppPalette.focusedColor.withAlpha(120),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(
+                                      color: AppPalette.focusedColor
+                                          .withAlpha(120),
                                     ),
                               ),
                             ],
@@ -186,8 +203,10 @@ class _BlogCardState extends State<BlogCard> {
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(child: Loader()),
-                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                    placeholder: (context, url) =>
+                        const Center(child: Loader()),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
                   ),
                 ),
               ),

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:blog_app/core/error/exceptions.dart';
 import 'package:blog_app/features/blog/data/models/blog_model.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class BlogRemoteDataSource {
@@ -60,24 +61,22 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
     }
   }
 
-  // Add these new implementations
   @override
   Future<void> likeBlog(String blogId, String userId) async {
     try {
-      // First, insert the like record
+      // Insert a new like record
       await supabaseClient.from('blog_likes').upsert({
         'blog_id': blogId,
         'user_id': userId,
       });
 
-      // Then, get the blog author's ID to create notification
+      // Optionally, create a notification for the blog author
       final blog = await supabaseClient
           .from('blogs')
           .select('poster_id')
           .eq('id', blogId)
           .single();
 
-      // Create notification for the blog author
       await supabaseClient.from('notifications').insert({
         'user_id': blog['poster_id'],
         'blog_id': blogId,
@@ -87,13 +86,14 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
     } on PostgrestException catch (e) {
       throw ServerExceptions(e.message);
     } catch (e) {
-      throw ServerExceptions(e.toString());
+      throw ServerExceptions('Failed to like blog: $e');
     }
   }
 
   @override
   Future<void> unlikeBlog(String blogId, String userId) async {
     try {
+      // Delete the like record
       await supabaseClient
           .from('blog_likes')
           .delete()
@@ -101,13 +101,14 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
     } on PostgrestException catch (e) {
       throw ServerExceptions(e.message);
     } catch (e) {
-      throw ServerExceptions(e.toString());
+      throw ServerExceptions('Failed to unlike blog: $e');
     }
   }
 
   @override
   Future<bool> isLikedByUser(String blogId, String userId) async {
     try {
+      // Check if the user has liked the blog
       final response = await supabaseClient
           .from('blog_likes')
           .select()
@@ -117,30 +118,39 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
     } on PostgrestException catch (e) {
       throw ServerExceptions(e.message);
     } catch (e) {
-      throw ServerExceptions(e.toString());
+      throw ServerExceptions('Failed to check if blog is liked: $e');
     }
   }
 
-  // Modify your existing getAllBlogs method to include likes information
   @override
   Future<List<BlogModel>> getAllBlogs({int page = 1, int limit = 10}) async {
     try {
-      final blogs = await supabaseClient
-          .from('blogs')
-          .select('*, profiles (name), likes_count')
-          .order('updated_at', ascending: false)
-          .range((page - 1) * limit, page * limit - 1);
-      return blogs
-          .map(
-            (blog) => BlogModel.fromMap(blog).copyWith(
-              posterName: blog['profiles']['name'],
-              likesCount: blog['likes_count'] ?? 0,
-            ),
-          )
-          .toList();
+      final userId = supabaseClient.auth.currentUser?.id;
+
+      final blogs = await supabaseClient.from('blogs').select('''
+    *,
+    profiles (name),
+    blog_likes (
+      blog_id
+    ) 
+  ''').order('updated_at', ascending: false);
+
+      return blogs.map<BlogModel>((blog) {
+        final likes = blog['blog_likes'] as List;
+        final likesCount = likes.length;
+        final isLiked = likes.any((like) => like['user_id'] == userId);
+
+        return BlogModel.fromMap(blog).copyWith(
+          posterName: blog['profiles']['name'],
+          likesCount: likesCount,
+          isLiked: isLiked,
+        );
+      }).toList();
     } on PostgrestException catch (e) {
+      print("Error fetching blogs: ${e.message}");
       throw ServerExceptions(e.message);
     } catch (e) {
+      print("Unexpected error: $e");
       throw ServerExceptions(e.toString());
     }
   }
@@ -246,20 +256,30 @@ class BlogRemoteDataSourceImpl extends BlogRemoteDataSource {
       String? imageUrl;
 
       if (image != null) {
-        // Upload the new image first (to avoid losing the old one if upload fails)
+        // Step 1: Delete the old image (if it exists)
+        try {
+          await supabaseClient.storage.from('blog_images').remove([blog.id]);
+        } on StorageException catch (e) {
+          // Ignore if the old image doesn't exist
+          if (!e.message.contains('not found')) {
+            throw ServerExceptions(e.message);
+          }
+        }
+
+        // Step 2: Upload the new image with a unique name
+        final uniqueFileName =
+            '${blog.id}_${DateTime.now().millisecondsSinceEpoch}';
         await supabaseClient.storage
             .from('blog_images')
-            .upload(blog.id, image, fileOptions: FileOptions(upsert: true));
+            .upload(uniqueFileName, image);
 
-        // Get the new image's public URL
-        imageUrl =
-            supabaseClient.storage.from('blog_images').getPublicUrl(blog.id);
-
-        // Delete the old image (only after successful upload)
-        await supabaseClient.storage.from('blog_images').remove([blog.id]);
+        // Step 3: Get the new image's public URL
+        imageUrl = supabaseClient.storage
+            .from('blog_images')
+            .getPublicUrl(uniqueFileName);
       }
 
-      // Update blog content and image URL in a single query
+      // Step 4: Update blog content and image URL in the database
       final updateData = {
         'title': blog.title,
         'content': blog.content,
